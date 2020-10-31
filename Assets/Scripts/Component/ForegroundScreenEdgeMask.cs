@@ -32,8 +32,6 @@ namespace Unitils
 			this.maskBottom.rectTransform.SetSizeDeltaY(maskSize.y);
 
 			this.colorGroup.SetColor(systemData.ScreenEdgeMaskColor);
-
-			Debug.Log("Apply");
 		}
 
 
