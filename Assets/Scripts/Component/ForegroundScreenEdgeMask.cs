@@ -24,7 +24,7 @@ namespace Unitils
 		private void Apply()
 		{
 			SystemData systemData = SystemData.Instance;
-			Vector2 maskSize = Utils.Screen.GetMargin();
+			Vector2 maskSize = Utils.Screen.GetMargin(systemData);
 
 			this.maskLeft.rectTransform.SetSizeDeltaX(maskSize.x);
 			this.maskRight.rectTransform.SetSizeDeltaX(maskSize.x);

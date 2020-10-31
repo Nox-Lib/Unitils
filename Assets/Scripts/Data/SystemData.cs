@@ -2,7 +2,7 @@
 
 namespace Unitils
 {
-	public class SystemData : ScriptableObject
+	public class SystemData : ScriptableObject, IScreenData
 	{
 		private static SystemData instance = null;
 		public static SystemData Instance {

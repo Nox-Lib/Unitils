@@ -6,16 +6,14 @@ namespace Unitils
 	{
 		public static class Screen
 		{
-			public static Vector2 GetReferenceResolution()
+			public static Vector2 GetReferenceResolution(IScreenData screenData)
 			{
-				SystemData systemData = SystemData.Instance;
-
-				if (systemData.ScreenMode == Define.ScreenMode.Fixed) {
-					return systemData.BaseScreenSize;
+				if (screenData.ScreenMode == Define.ScreenMode.Fixed) {
+					return screenData.BaseScreenSize;
 				}
 
-				Vector2 minScreenSize = systemData.MinScreenSize;
-				Vector2 maxScreenSize = systemData.MaxScreenSize;
+				Vector2 minScreenSize = screenData.MinScreenSize;
+				Vector2 maxScreenSize = screenData.MaxScreenSize;
 
 				if (minScreenSize == maxScreenSize) {
 					return minScreenSize;
@@ -31,7 +29,7 @@ namespace Unitils
 					return new Vector2(maxScreenSize.x, minScreenSize.y);
 				}
 
-				screenSize = systemData.BaseScreenSize;
+				screenSize = screenData.BaseScreenSize;
 				bool isLandscape = screenSize.x > screenSize.y;
 				float baseAspect = screenSize.x / screenSize.y;
 				float aspectRatio = screenAspect / baseAspect;
@@ -57,19 +55,19 @@ namespace Unitils
 			}
 
 
-			public static Vector2 GetCanvasSize()
+			public static Vector2 GetCanvasSize(IScreenData screenData)
 			{
 				Vector2 screenSize = new Vector2(UnityEngine.Screen.width, UnityEngine.Screen.height);
-				Vector2 resolution = GetReferenceResolution();
+				Vector2 resolution = GetReferenceResolution(screenData);
 				float scaleFactor = Mathf.Min(screenSize.x / resolution.x, screenSize.y / resolution.y);
 				return screenSize / scaleFactor;
 			}
 
 
-			public static Vector2 GetMargin()
+			public static Vector2 GetMargin(IScreenData screenData)
 			{
-				Vector2 resolution = GetReferenceResolution();
-				Vector2 canvasSize = GetCanvasSize();
+				Vector2 resolution = GetReferenceResolution(screenData);
+				Vector2 canvasSize = GetCanvasSize(screenData);
 
 				Vector2 result;
 				result.x = Mathf.Max(0f, Mathf.Abs(resolution.x - canvasSize.x) * 0.5f);
@@ -81,10 +79,10 @@ namespace Unitils
 			}
 
 
-			public static void SetCanvasCameraViewport(Camera camera)
+			public static void SetCanvasCameraViewport(Camera camera, IScreenData screenData)
 			{
-				Vector2 canvasSize = GetCanvasSize();
-				Vector2 margin = GetMargin();
+				Vector2 canvasSize = GetCanvasSize(screenData);
+				Vector2 margin = GetMargin(screenData);
 
 				float x = 0f;
 				float w = 1f;
