@@ -1,8 +1,8 @@
-UnitilsApps/
-UnitilsApps.meta
+Assets/UnitilsApps/
+Assets/UnitilsApps.meta
 
-Plugins/
-Plugins.meta
+Assets/Plugins/
+Assets/Plugins.meta
 
 # This .gitignore file should be placed at the root of your Unity project directory
 #
