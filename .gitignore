@@ -4,8 +4,8 @@ Assets/UnitilsApps.meta
 Assets/Plugins/
 Assets/Plugins.meta
 
-Assets/Resources/
-Assets/Resources.meta
+Assets/Resources/DOTweenSettings.asset
+Assets/Resources/DOTweenSettings.asset.meta
 
 # This .gitignore file should be placed at the root of your Unity project directory
 #
