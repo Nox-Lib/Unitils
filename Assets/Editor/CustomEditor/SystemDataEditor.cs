@@ -41,17 +41,17 @@ namespace Unitils
 				EditorGUILayout.PropertyField(this.serializedObject.FindProperty("screenMode"));
 
 				switch (systemData.ScreenMode) {
-				case Define.System.ScreenMode.Fixed:
+				case Define.ScreenMode.Fixed:
 					EditorGUILayout.PropertyField(this.serializedObject.FindProperty("baseScreenSize"));
 					break;
-				case Define.System.ScreenMode.Expand:
+				case Define.ScreenMode.Expand:
 					EditorGUILayout.PropertyField(this.serializedObject.FindProperty("baseScreenSize"));
 					EditorGUILayout.PropertyField(this.serializedObject.FindProperty("minScreenSize"));
 					EditorGUILayout.PropertyField(this.serializedObject.FindProperty("maxScreenSize"));
 					break;
 				}
 
-				if (systemData.ScreenMode == Define.System.ScreenMode.Expand) {
+				if (systemData.ScreenMode == Define.ScreenMode.Expand) {
 					bool isInRangeW = Utils.Math.InRange(systemData.BaseScreenSize.x, systemData.MinScreenSize.x, systemData.MaxScreenSize.x);
 					bool isInRangeH = Utils.Math.InRange(systemData.BaseScreenSize.y, systemData.MinScreenSize.y, systemData.MaxScreenSize.y);
 					if (!isInRangeW || !isInRangeH) {
@@ -59,10 +59,10 @@ namespace Unitils
 					}
 				}
 
-				EditorGUILayout.PropertyField(this.serializedObject.FindProperty("isOutsideScreenMask"));
-				if (systemData.IsOutsideScreenMask) {
-					EditorGUILayout.PropertyField(this.serializedObject.FindProperty("screenMaskColor"));
-				}
+				EditorGUILayout.PropertyField(this.serializedObject.FindProperty("isScreenEdgeMask"), new GUIContent("Is Edge Mask"));
+				GUI.enabled = systemData.IsScreenEdgeMask;
+				EditorGUILayout.PropertyField(this.serializedObject.FindProperty("screenEdgeMaskColor"), new GUIContent("Edge Mask Color"));
+				GUI.enabled = true;
 				EditorGUILayout.EndVertical();
 			}
 			#endregion
