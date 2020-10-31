@@ -55,7 +55,7 @@ namespace Unitils
 					bool isInRangeW = Utils.Math.InRange(systemData.BaseScreenSize.x, systemData.MinScreenSize.x, systemData.MaxScreenSize.x);
 					bool isInRangeH = Utils.Math.InRange(systemData.BaseScreenSize.y, systemData.MinScreenSize.y, systemData.MaxScreenSize.y);
 					if (!isInRangeW || !isInRangeH) {
-						EditorGUILayout.HelpBox("BaseScreenSizeはMinScreenSizeとMaxScreenSizeの範囲内で設定してください。", MessageType.Warning);
+						EditorGUILayout.HelpBox("BaseScreenSize は MinScreenSize と MaxScreenSize の範囲内で設定してください。", MessageType.Warning);
 					}
 				}
 
