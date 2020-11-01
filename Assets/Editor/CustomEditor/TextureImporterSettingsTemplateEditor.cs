@@ -202,7 +202,7 @@ namespace Unitils
 				this.styles.spriteAlignmentOptions
 			);
 
-			this.spritePivot = new PropertyLayoutHorizontalField(
+			this.spritePivot = new PropertyLayoutField(
 				" ",
 				this.serializedObject.FindProperty("importerSettings.m_SpritePivot")
 			);
