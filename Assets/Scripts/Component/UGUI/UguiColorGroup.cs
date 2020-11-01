@@ -20,7 +20,7 @@ namespace Unitils
 			this.isPrepared = true;
 			if (this.graphics == null) return;
 			this.graphicColors = new List<ColorData<Graphic>>();
-			this.graphics.ForEach(x => { this.graphicColors.Add(new ColorData<Graphic>(x, x.color)); });
+			this.graphics.ForEach(x => this.graphicColors.Add(new ColorData<Graphic>(x, x.color)));
 		}
 
 		protected override void SetColor()
@@ -67,7 +67,7 @@ namespace Unitils
 			{
 				base.OnInspectorGUI();
 
-				GUILayout.Space(10f);
+				EditorGUILayout.Space();
 
 				if (GUILayout.Button("Apply")) {
 					UguiColorGroup colorGroup = this.target as UguiColorGroup;

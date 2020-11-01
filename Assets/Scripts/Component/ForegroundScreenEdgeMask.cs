@@ -67,7 +67,7 @@ namespace Unitils
 			{
 				base.OnInspectorGUI();
 
-				GUILayout.Space(10f);
+				EditorGUILayout.Space();
 
 				if (GUILayout.Button("Apply")) {
 					ForegroundScreenEdgeMask instance = this.target as ForegroundScreenEdgeMask;
