@@ -12,28 +12,22 @@ namespace Unitils
 	{
 		private const string TEXTURE_IMPORTER_SHOW_ADVANCED = "TextureImporterShowAdvanced";
 
-		private class TextureImporterTypeData
+		private readonly TextureImporterType[] enabledTextureImporterTypes =
 		{
-			public TextureImporterType TextureType { get; }
-			public TextureImporterShape TextureShape { get; }
+			TextureImporterType.Default,
+			TextureImporterType.Sprite
+		};
 
-			public TextureImporterTypeData(TextureImporterType textureType, TextureImporterShape textureShape)
+		private readonly Dictionary<TextureImporterType, TextureImporterShape> textureShapeCaps = new Dictionary<TextureImporterType, TextureImporterShape>
+		{
 			{
-				this.TextureType = textureType;
-				this.TextureShape = textureShape;
-			}
-		}
-
-		private TextureImporterTypeData[] enabledTextureImporterTypes =
-		{
-			new TextureImporterTypeData(
 				TextureImporterType.Default,
 				TextureImporterShape.Texture2D | TextureImporterShape.TextureCube
-			),
-			new TextureImporterTypeData(
+			},
+			{
 				TextureImporterType.Sprite,
 				TextureImporterShape.Texture2D
-			)
+			}
 		};
 
 		private TextureImporterSettingsTemplate importerSettingsTemplate;
@@ -225,8 +219,8 @@ namespace Unitils
 			this.textureType = new PropertyLayoutIntPopup(
 				"Texture Type",
 				this.serializedObject.FindProperty("importerSettings.m_TextureType"),
-				enabledTextureImporterTypes.Select(x => this.styles.textureTypeOptions[x.TextureType]).ToArray(),
-				enabledTextureImporterTypes.Select(x => (int)x.TextureType).ToArray()
+				this.enabledTextureImporterTypes.Select(x => this.styles.textureTypeOptions[x]).ToArray(),
+				this.enabledTextureImporterTypes.Select(x => (int)x).ToArray()
 			);
 
 			this.textureShape = new PropertyLayoutIntPopup(
@@ -256,17 +250,17 @@ namespace Unitils
 		}
 
 
-		private void ValidateProperties(TextureImporterTypeData selectedTextureTypeData)
+		private void ValidateProperties(TextureImporterType selectedTextureImporterType)
 		{
 			bool isUnfind = false;
 			isUnfind = !Enum.IsDefined(typeof(TextureImporterShape), this.textureShape.Property.intValue);
-			isUnfind = isUnfind || !selectedTextureTypeData.TextureShape.HasFlag((TextureImporterShape)this.textureShape.Property.intValue);
+			isUnfind = isUnfind || !this.textureShapeCaps[selectedTextureImporterType].HasFlag((TextureImporterShape)this.textureShape.Property.intValue);
 
 			if (isUnfind) {
 				Array enumValues = Enum.GetValues(typeof(TextureImporterShape));
 				for (int i = 0; i < enumValues.Length; i++) {
 					TextureImporterShape enumValue = (TextureImporterShape)enumValues.GetValue(i);
-					if (selectedTextureTypeData.TextureShape.HasFlag(enumValue)) {
+					if (this.textureShapeCaps[selectedTextureImporterType].HasFlag(enumValue)) {
 						this.importerSettings.textureShape = enumValue;
 						break;
 					}
@@ -283,22 +277,21 @@ namespace Unitils
 			this.showAdvanced = EditorPrefs.GetBool(TEXTURE_IMPORTER_SHOW_ADVANCED);
 
 			this.textureType.Draw();
-			TextureImporterTypeData selectedTextureTypeData = enabledTextureImporterTypes
-				.FirstOrDefault(x => x.TextureType == (TextureImporterType)this.textureType.Property.intValue);
+			TextureImporterType selectedTextureImporterType = (TextureImporterType)this.textureType.Property.intValue;
 
-			this.ValidateProperties(selectedTextureTypeData);
+			this.ValidateProperties(selectedTextureImporterType);
 
 			this.textureShape.SetValues(
-				this.styles.textureShapeOptions[selectedTextureTypeData.TextureShape],
-				this.styles.textureShapeValues[selectedTextureTypeData.TextureShape]
+				this.styles.textureShapeOptions[this.textureShapeCaps[selectedTextureImporterType]],
+				this.styles.textureShapeValues[this.textureShapeCaps[selectedTextureImporterType]]
 			);
-			GUI.enabled = this.styles.textureShapeOptions[selectedTextureTypeData.TextureShape].Length > 1;
+			GUI.enabled = this.styles.textureShapeOptions[this.textureShapeCaps[selectedTextureImporterType]].Length > 1;
 			this.textureShape.Draw();
 			GUI.enabled = true;
 
 			EditorGUILayout.Space();
 
-			switch (selectedTextureTypeData.TextureType) {
+			switch (selectedTextureImporterType) {
 				case TextureImporterType.Default: this.DrawTextureImporterDefaultGUI(); break;
 				case TextureImporterType.Sprite: this.DrawTextureImporterSpriteGUI(); break;
 			}
