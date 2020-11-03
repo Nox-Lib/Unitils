@@ -32,7 +32,7 @@ namespace Unitils
 			this.values = Enum.GetValues(enumType) as int[];
 		}
 
-		public PropertyLayoutEnumPopup(string label, SerializedObject serializedObject, string propertyName, string[] options, Type enumType)
+		public PropertyLayoutEnumPopup(string label, SerializedObject serializedObject, string propertyName, Type enumType)
 		{
 			this.Properties = new SerializedProperty[] { serializedObject.FindProperty(propertyName) };
 			this.Label = new GUIContent(label);

@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEditor;
+using System.Linq;
 
 namespace Unitils
 {
@@ -21,6 +22,14 @@ namespace Unitils
 		{
 			this.options = args[0] as string[];
 			this.values = args[1] as int[];
+		}
+
+		public PropertyLayoutIntPopup(string label, SerializedProperty serializedProperty, int[] values)
+		{
+			this.Properties = new SerializedProperty[] { serializedProperty };
+			this.Label = new GUIContent(label);
+			this.options = values.Select(x => x.ToString()).ToArray();
+			this.values = values;
 		}
 
 		public PropertyLayoutIntPopup(string label, SerializedProperty serializedProperty, string[] options, int[] values)

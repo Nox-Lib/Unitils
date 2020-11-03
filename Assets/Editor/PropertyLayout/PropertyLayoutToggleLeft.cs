@@ -3,7 +3,7 @@ using UnityEditor;
 
 namespace Unitils
 {
-	public class PropertyLayoutToggle : IPropertyLayout
+	public class PropertyLayoutToggleLeft : IPropertyLayout
 	{
 		public SerializedProperty[] Properties { get; private set; }
 		public SerializedProperty Property => this.Properties[0];
@@ -11,18 +11,18 @@ namespace Unitils
 
 		public void Draw()
 		{
-			this.Property.boolValue = EditorGUILayout.Toggle(this.Label, this.Property.boolValue);
+			this.Property.boolValue = EditorGUILayout.ToggleLeft(this.Label, this.Property.boolValue);
 		}
 
-		public void SetValues(params object[] args) {}
+		public void SetValues(params object[] args) { }
 
-		public PropertyLayoutToggle(string label, SerializedProperty serializedProperty)
+		public PropertyLayoutToggleLeft(string label, SerializedProperty serializedProperty)
 		{
 			this.Properties = new SerializedProperty[] { serializedProperty };
 			this.Label = new GUIContent(label);
 		}
 
-		public PropertyLayoutToggle(string label, SerializedObject serializedObject, string propertyName)
+		public PropertyLayoutToggleLeft(string label, SerializedObject serializedObject, string propertyName)
 		{
 			this.Properties = new SerializedProperty[] { serializedObject.FindProperty(propertyName) };
 			this.Label = new GUIContent(label);

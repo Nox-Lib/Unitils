@@ -11,6 +11,7 @@ namespace Unitils
 	public class TextureImporterSettingsTemplateEditor : Editor
 	{
 		private const string TEXTURE_IMPORTER_SHOW_ADVANCED = "TextureImporterShowAdvanced";
+		private const string TEXTURE_IMPORTER_PLATFORM_SHOW_DEFAULT = "TextureImporterPlatformShowDefault";
 
 		private readonly TextureImporterType[] enabledTextureImporterTypes =
 		{
@@ -31,9 +32,9 @@ namespace Unitils
 		};
 
 		private TextureImporterSettingsTemplate importerSettingsTemplate;
-		private TextureImporterSettings importerSettings;
 		private Styles styles;
 		private bool showAdvanced;
+		private bool showPlatformDefault;
 		private bool showPerAxisWrapModes;
 
 
@@ -69,12 +70,18 @@ namespace Unitils
 		private SerializedProperty wrapW;
 		#endregion
 
+		#region TextureImporterPlatformSettings
+		private PlatformSettingsInspector platformDefault;
+		private Dictionary<BuildTargetGroup, PlatformSettingsInspector> platformOverrides;
+		#endregion
+
 
 		public override void OnInspectorGUI()
 		{
 			this.serializedObject.Update();
 
-			this.DrawTextureImporterGUI();
+			this.DrawImporterSettingsGUI();
+			this.DrawImporterPlatformSettingsGUI();
 
 			this.serializedObject.ApplyModifiedProperties();
 		}
@@ -88,13 +95,16 @@ namespace Unitils
 		private void Initialize()
 		{
 			this.importerSettingsTemplate = this.target as TextureImporterSettingsTemplate;
-			this.importerSettings = this.importerSettingsTemplate.ImporterSettings;
 			this.styles = this.styles ?? new Styles();
 
-			this.InitializePropertyCache();
+			this.showAdvanced = EditorPrefs.GetBool(TEXTURE_IMPORTER_SHOW_ADVANCED);
+			this.showPlatformDefault = EditorPrefs.GetBool(TEXTURE_IMPORTER_PLATFORM_SHOW_DEFAULT);
+
+			this.SetImporterSettingsPropertyCache();
+			this.SetImporterPlatformSettingsPropertyCache();
 		}
 
-		private void InitializePropertyCache()
+		private void SetImporterSettingsPropertyCache()
 		{
 			this.alphaSource = new PropertyLayoutIntPopup(
 				"Alpha Source",
@@ -249,6 +259,28 @@ namespace Unitils
 			this.wrapW = this.serializedObject.FindProperty("importerSettings.m_WrapW");
 		}
 
+		private void SetImporterPlatformSettingsPropertyCache()
+		{
+			this.platformDefault = new PlatformSettingsInspector(
+				this.serializedObject.FindProperty("defaultPlatform"),
+				this.importerSettingsTemplate.DefaultPlatform,
+				this.importerSettingsTemplate.ImporterSettings.textureType
+			);
+
+			this.platformOverrides = new Dictionary<BuildTargetGroup, PlatformSettingsInspector>();
+
+			for (int i = 0; i < this.importerSettingsTemplate.PlatformGroups.Count; i++) {
+				this.platformOverrides.Add(
+					BuildPipeline.GetBuildTargetGroup(this.importerSettingsTemplate.PlatformGroups[i].Target),
+					new PlatformSettingsInspector(
+						this.serializedObject.FindProperty("platformGroups").GetArrayElementAtIndex(i),
+						this.importerSettingsTemplate.PlatformGroups[i],
+						this.importerSettingsTemplate.ImporterSettings.textureType
+					)
+				);
+			}
+		}
+
 
 		private void ValidateProperties(TextureImporterType selectedTextureImporterType)
 		{
@@ -261,7 +293,7 @@ namespace Unitils
 				for (int i = 0; i < enumValues.Length; i++) {
 					TextureImporterShape enumValue = (TextureImporterShape)enumValues.GetValue(i);
 					if (this.textureShapeCaps[selectedTextureImporterType].HasFlag(enumValue)) {
-						this.importerSettings.textureShape = enumValue;
+						this.importerSettingsTemplate.ImporterSettings.textureShape = enumValue;
 						break;
 					}
 				}
@@ -269,12 +301,10 @@ namespace Unitils
 		}
 
 
-		private void DrawTextureImporterGUI()
+		private void DrawImporterSettingsGUI()
 		{
 			EditorGUILayout.BeginVertical();
 			EditorGUILayout.Space();
-
-			this.showAdvanced = EditorPrefs.GetBool(TEXTURE_IMPORTER_SHOW_ADVANCED);
 
 			this.textureType.Draw();
 			TextureImporterType selectedTextureImporterType = (TextureImporterType)this.textureType.Property.intValue;
@@ -292,8 +322,8 @@ namespace Unitils
 			EditorGUILayout.Space();
 
 			switch (selectedTextureImporterType) {
-				case TextureImporterType.Default: this.DrawTextureImporterDefaultGUI(); break;
-				case TextureImporterType.Sprite: this.DrawTextureImporterSpriteGUI(); break;
+				case TextureImporterType.Default: this.DrawImporterSettingsTypeDefaultGUI(); break;
+				case TextureImporterType.Sprite: this.DrawImporterSettingsTypeSpriteGUI(); break;
 			}
 
 			EditorPrefs.SetBool(TEXTURE_IMPORTER_SHOW_ADVANCED, this.showAdvanced);
@@ -301,7 +331,7 @@ namespace Unitils
 			EditorGUILayout.EndVertical();
 		}
 
-		private void DrawTextureImporterDefaultGUI()
+		private void DrawImporterSettingsTypeDefaultGUI()
 		{
 			this.sRGBTexture.Draw();
 			this.alphaSource.Draw();
@@ -322,16 +352,16 @@ namespace Unitils
 					this.streamingMipmapsPriority.Draw();
 					EditorGUI.indentLevel--;
 				}
-				this.DrawTextureImporterMipMapsGUI();
+				this.DrawImporterSettingsMipMapsGUI();
 
 				EditorGUI.indentLevel--;
 			}
 
 			EditorGUILayout.Space();
-			this.DrawTextureImporterCommonGUI();
+			this.DrawImporterSettingsCommonGUI();
 		}
 
-		private void DrawTextureImporterSpriteGUI()
+		private void DrawImporterSettingsTypeSpriteGUI()
 		{
 			this.spriteMode.Draw();
 			SpriteImportMode selectedSpriteMode = (SpriteImportMode)this.spriteMode.Property.intValue;
@@ -372,14 +402,14 @@ namespace Unitils
 				this.sRGBTexture.Draw();
 				this.alphaSource.Draw();
 				this.alphaIsTransparency.Draw();
-				this.DrawTextureImporterMipMapsGUI();
+				this.DrawImporterSettingsMipMapsGUI();
 			}
 
 			EditorGUILayout.Space();
-			this.DrawTextureImporterCommonGUI();
+			this.DrawImporterSettingsCommonGUI();
 		}
 
-		private void DrawTextureImporterMipMapsGUI()
+		private void DrawImporterSettingsMipMapsGUI()
 		{
 			this.enableMipMap.Draw();
 
@@ -405,9 +435,9 @@ namespace Unitils
 			}
 		}
 
-		private void DrawTextureImporterCommonGUI()
+		private void DrawImporterSettingsCommonGUI()
 		{
-			WrapModePopup(this.wrapU, this.wrapV, this.wrapW, false, ref this.showPerAxisWrapModes);
+			InternalsAccess.WrapModePopup(this.wrapU, this.wrapV, this.wrapW, false, ref this.showPerAxisWrapModes);
 			this.filterMode.Draw();
 
 			bool showAniso = true;
@@ -420,11 +450,29 @@ namespace Unitils
 			GUI.enabled = true;
 		}
 
-
-		private static void WrapModePopup(SerializedProperty wrapU, SerializedProperty wrapV, SerializedProperty wrapW, bool isVolumeTexture, ref bool showPerAxisWrapModes)
+		private void DrawImporterPlatformSettingsGUI()
 		{
-			object[] args = { wrapU, wrapV, wrapW, isVolumeTexture, showPerAxisWrapModes };
-			Type.GetType("UnityEditor.TextureInspector, UnityEditor").GetMethod("WrapModePopup", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, args);
+			EditorGUILayout.Space();
+
+			this.showPlatformDefault = EditorGUILayout.Foldout(this.showPlatformDefault, "Default");
+
+			if (this.showPlatformDefault) {
+				EditorGUILayout.BeginVertical(GUI.skin.box);
+				this.platformDefault.Draw();
+				EditorGUILayout.EndVertical();
+			}
+			EditorPrefs.SetBool(TEXTURE_IMPORTER_PLATFORM_SHOW_DEFAULT, this.showPlatformDefault);
+
+			EditorGUILayout.Space();
+
+			BuildTargetGroup buildTargetGroup = EditorGUILayout.BeginBuildTargetSelectionGrouping();
+
+			if (!this.platformOverrides.ContainsKey(buildTargetGroup)) {
+				throw new NotSupportedException($"{buildTargetGroup} is unknown platform.");
+			}
+			this.platformOverrides[buildTargetGroup].Draw();
+
+			EditorGUILayout.EndBuildTargetSelectionGrouping();
 		}
 
 
@@ -506,6 +554,146 @@ namespace Unitils
 				"Bilinear",
 				"Trilinear"
 			};
+		}
+
+
+		private class PlatformSettingsInspector
+		{
+			private readonly int[] maxTextureSizeValues = { 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192 };
+
+			private readonly string[] textureCompressionOptions =
+			{
+				"None",
+				"Low Quality",
+				"Normal Quality",
+				"High Quality"
+			};
+			private readonly int[] textureCompressionValues =
+			{
+				(int)TextureImporterCompression.Uncompressed,
+				(int)TextureImporterCompression.CompressedLQ,
+				(int)TextureImporterCompression.Compressed,
+				(int)TextureImporterCompression.CompressedHQ
+			};
+
+			private SerializedProperty serializedProperty;
+			private int index;
+
+			public TextureImporterPlatformSettingsGroup Group { get; }
+
+			public IPropertyLayout isOverride { get; private set; }
+			public IPropertyLayout MaxSize { get; private set; }
+			public IPropertyLayout ResizeAlgorithm { get; private set; }
+			public IPropertyLayout Format { get; private set; }
+			public IPropertyLayout Compresssion { get; private set; }
+			public IPropertyLayout UseCrunchCompression { get; private set; }
+
+			private bool IsStandalone => BuildPipeline.GetBuildTargetGroup(this.Group.Target) == BuildTargetGroup.Standalone;
+
+			public PlatformSettingsInspector(SerializedProperty serializedProperty, TextureImporterPlatformSettingsGroup group, TextureImporterType textureImporterType)
+			{
+				this.serializedProperty = serializedProperty;
+				this.Group = group;
+
+				this.isOverride = new PropertyLayoutToggleLeft(
+					this.IsStandalone ? "Override for PC, Mac & Linux Standalone" : $"Override for {this.Group.Target}",
+					this.serializedProperty.FindPropertyRelative("isOverride")
+				);
+
+				this.MaxSize = new PropertyLayoutIntPopup(
+					"Max Size",
+					this.serializedProperty.FindPropertyRelative("settings.m_MaxTextureSize"),
+					this.maxTextureSizeValues
+				);
+
+				this.ResizeAlgorithm = new PropertyLayoutEnumPopup(
+					"Resize Algorithm",
+					this.serializedProperty.FindPropertyRelative("settings.m_ResizeAlgorithm"),
+					typeof(TextureResizeAlgorithm)
+				);
+
+				this.SetFormatProperty(textureImporterType);
+
+				this.Compresssion = new PropertyLayoutIntPopup(
+					"Compression",
+					this.serializedProperty.FindPropertyRelative("settings.m_TextureCompression"),
+					this.textureCompressionOptions,
+					this.textureCompressionValues
+				);
+			}
+
+			public void SetFormatProperty(TextureImporterType textureImporterType)
+			{
+				Tuple<int[], string[]> formatValuesAndStrings;
+
+				if (this.Group.IsDefault) {
+					formatValuesAndStrings = InternalsAccess.GetDefaultTextureFormatValuesAndStrings(textureImporterType);
+				}
+				else {
+					formatValuesAndStrings = InternalsAccess.GetPlatformTextureFormatValuesAndStrings(textureImporterType, this.Group.Target);
+				}
+
+				if (this.Format == null) {
+					this.Format = new PropertyLayoutIntPopup(
+						"Format",
+						this.serializedProperty.FindPropertyRelative("settings.m_TextureFormat"),
+						formatValuesAndStrings.Item2,
+						formatValuesAndStrings.Item1
+					);
+				}
+				else {
+					this.Format.SetValues(formatValuesAndStrings.Item2, formatValuesAndStrings.Item1);
+				}
+			}
+
+			public void Draw()
+			{
+				if (!this.Group.IsDefault) {
+					this.isOverride.Draw();
+				}
+				GUI.enabled = this.Group.IsDefault || this.isOverride.Property.boolValue;
+
+				this.MaxSize.Draw();
+				this.ResizeAlgorithm.Draw();
+				this.Format.Draw();
+				this.Compresssion.Draw();
+
+				GUI.enabled = true;
+			}
+		}
+
+
+		private static class InternalsAccess
+		{
+			public static void WrapModePopup(SerializedProperty wrapU, SerializedProperty wrapV, SerializedProperty wrapW, bool isVolumeTexture, ref bool showPerAxisWrapModes)
+			{
+				object[] args = { wrapU, wrapV, wrapW, isVolumeTexture, null };
+				Type.GetType("UnityEditor.TextureInspector, UnityEditor")
+					.GetMethod("WrapModePopup", BindingFlags.Static | BindingFlags.NonPublic)
+					.Invoke(null, args);
+
+				showPerAxisWrapModes = (bool)args[4];
+			}
+
+			public static Tuple<int[], string[]> GetDefaultTextureFormatValuesAndStrings(TextureImporterType textureType)
+			{
+				object[] args = { textureType, null, null };
+				Type.GetType("UnityEditor.TextureImportValidFormats, UnityEditor")
+					.GetMethod("GetDefaultTextureFormatValuesAndStrings", BindingFlags.Static | BindingFlags.Public)
+					.Invoke(null, args);
+
+				return new Tuple<int[], string[]>(args[1] as int[], args[2] as string[]);
+			}
+
+			public static Tuple<int[], string[]> GetPlatformTextureFormatValuesAndStrings(TextureImporterType textureType, BuildTarget target)
+			{
+				object[] args = { textureType, target, null, null };
+				Type.GetType("UnityEditor.TextureImportValidFormats, UnityEditor")
+					.GetMethod("GetPlatformTextureFormatValuesAndStrings", BindingFlags.Static | BindingFlags.Public)
+					.Invoke(null, args);
+
+				return new Tuple<int[], string[]>(args[2] as int[], args[3] as string[]);
+			}
 		}
 	}
 }
