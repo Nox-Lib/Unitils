@@ -264,7 +264,8 @@ namespace Unitils
 			this.platformDefault = new PlatformSettingsInspector(
 				this.serializedObject.FindProperty("defaultPlatform"),
 				this.importerSettingsTemplate.DefaultPlatform,
-				this.importerSettingsTemplate.ImporterSettings.textureType
+				(TextureImporterType)this.textureType.Property.intValue,
+				(SpriteImportMode)this.spriteMode.Property.intValue
 			);
 
 			this.platformOverrides = new Dictionary<BuildTargetGroup, PlatformSettingsInspector>();
@@ -275,7 +276,8 @@ namespace Unitils
 					new PlatformSettingsInspector(
 						this.serializedObject.FindProperty("platformGroups").GetArrayElementAtIndex(i),
 						this.importerSettingsTemplate.PlatformGroups[i],
-						this.importerSettingsTemplate.ImporterSettings.textureType
+						(TextureImporterType)this.textureType.Property.intValue,
+						(SpriteImportMode)this.spriteMode.Property.intValue
 					)
 				);
 			}
@@ -293,7 +295,7 @@ namespace Unitils
 				for (int i = 0; i < enumValues.Length; i++) {
 					TextureImporterShape enumValue = (TextureImporterShape)enumValues.GetValue(i);
 					if (this.textureShapeCaps[selectedTextureImporterType].HasFlag(enumValue)) {
-						this.importerSettingsTemplate.ImporterSettings.textureShape = enumValue;
+						this.textureShape.Property.intValue = (int)enumValue;
 						break;
 					}
 				}
@@ -452,6 +454,7 @@ namespace Unitils
 
 		private void DrawImporterPlatformSettingsGUI()
 		{
+			TextureImporterType selectedTextureImporterType = (TextureImporterType)this.textureType.Property.intValue;
 			EditorGUILayout.Space();
 
 			this.showPlatformDefault = EditorGUILayout.Foldout(this.showPlatformDefault, "Default");
@@ -470,6 +473,7 @@ namespace Unitils
 			if (!this.platformOverrides.ContainsKey(buildTargetGroup)) {
 				throw new NotSupportedException($"{buildTargetGroup} is unknown platform.");
 			}
+			this.platformOverrides[buildTargetGroup].SetFormatProperty(selectedTextureImporterType);
 			this.platformOverrides[buildTargetGroup].Draw();
 
 			EditorGUILayout.EndBuildTargetSelectionGrouping();
@@ -576,65 +580,118 @@ namespace Unitils
 				(int)TextureImporterCompression.CompressedHQ
 			};
 
-			private SerializedProperty serializedProperty;
-			private int index;
+			private readonly string[] androidETC2FallbackOptions =
+			{
+				"Use build settings",
+				"32-bit",
+				"16-bit",
+				"32-bit (half resolution)"
+			};
+			private readonly int[] androidETC2FallbackValues =
+			{
+				(int)AndroidETC2FallbackOverride.UseBuildSettings,
+				(int)AndroidETC2FallbackOverride.Quality32Bit,
+				(int)AndroidETC2FallbackOverride.Quality16Bit,
+				(int)AndroidETC2FallbackOverride.Quality32BitDownscaled
+			};
 
-			public TextureImporterPlatformSettingsGroup Group { get; }
+			private readonly SerializedProperty serializedProperty;
+			private readonly TextureImporterPlatformSettingsGroup platformSettingsGroup;
+			private readonly TextureImporterType selectedTextureImporterType;
+			private readonly SpriteImportMode selectedSpriteImportMode;
 
-			public IPropertyLayout isOverride { get; private set; }
-			public IPropertyLayout MaxSize { get; private set; }
-			public IPropertyLayout ResizeAlgorithm { get; private set; }
-			public IPropertyLayout Format { get; private set; }
-			public IPropertyLayout Compresssion { get; private set; }
-			public IPropertyLayout UseCrunchCompression { get; private set; }
+			private IPropertyLayout overridden;
+			private IPropertyLayout maxSize;
+			private IPropertyLayout resizeAlgorithm;
+			private IPropertyLayout format;
+			private IPropertyLayout compresssion;
+			private IPropertyLayout crunchedCompression;
+			private IPropertyLayout compressionQualityPopup;
+			private IPropertyLayout compressionQualitySlider;
+			private IPropertyLayout allowsAlphaSplitting;
+			private IPropertyLayout androidETC2FallbackOverride;
 
-			private bool IsStandalone => BuildPipeline.GetBuildTargetGroup(this.Group.Target) == BuildTargetGroup.Standalone;
-
-			public PlatformSettingsInspector(SerializedProperty serializedProperty, TextureImporterPlatformSettingsGroup group, TextureImporterType textureImporterType)
+			public PlatformSettingsInspector(SerializedProperty serializedProperty, TextureImporterPlatformSettingsGroup platformSettingsGroup, TextureImporterType textureType, SpriteImportMode spriteMode)
 			{
 				this.serializedProperty = serializedProperty;
-				this.Group = group;
+				this.platformSettingsGroup = platformSettingsGroup;
+				this.selectedTextureImporterType = textureType;
+				this.selectedSpriteImportMode = spriteMode;
 
-				this.isOverride = new PropertyLayoutToggleLeft(
-					this.IsStandalone ? "Override for PC, Mac & Linux Standalone" : $"Override for {this.Group.Target}",
-					this.serializedProperty.FindPropertyRelative("isOverride")
+				bool isStandalone = BuildPipeline.GetBuildTargetGroup(this.platformSettingsGroup.Target) == BuildTargetGroup.Standalone;
+
+				this.overridden = new PropertyLayoutToggleLeft(
+					isStandalone ? "Override for PC, Mac & Linux Standalone" : $"Override for {this.platformSettingsGroup.Target}",
+					this.serializedProperty.FindPropertyRelative("settings.m_Overridden")
 				);
 
-				this.MaxSize = new PropertyLayoutIntPopup(
+				this.maxSize = new PropertyLayoutIntPopup(
 					"Max Size",
 					this.serializedProperty.FindPropertyRelative("settings.m_MaxTextureSize"),
 					this.maxTextureSizeValues
 				);
 
-				this.ResizeAlgorithm = new PropertyLayoutEnumPopup(
+				this.resizeAlgorithm = new PropertyLayoutEnumPopup(
 					"Resize Algorithm",
 					this.serializedProperty.FindPropertyRelative("settings.m_ResizeAlgorithm"),
 					typeof(TextureResizeAlgorithm)
 				);
 
-				this.SetFormatProperty(textureImporterType);
+				this.SetFormatProperty(this.selectedTextureImporterType);
 
-				this.Compresssion = new PropertyLayoutIntPopup(
+				this.compresssion = new PropertyLayoutIntPopup(
 					"Compression",
 					this.serializedProperty.FindPropertyRelative("settings.m_TextureCompression"),
 					this.textureCompressionOptions,
 					this.textureCompressionValues
 				);
+
+				this.crunchedCompression = new PropertyLayoutIntToggle(
+					"Use Crunch Compression",
+					this.serializedProperty.FindPropertyRelative("settings.m_CrunchedCompression")
+				);
+
+				this.compressionQualityPopup = new PropertyLayoutEnumPopup(
+					"Compression Quality",
+					this.serializedProperty.FindPropertyRelative("settings.m_CompressionQuality"),
+					typeof(TextureCompressionQuality)
+				);
+
+				this.compressionQualitySlider = new PropertyLayoutIntSlider(
+					"Compression Quality",
+					this.serializedProperty.FindPropertyRelative("settings.m_CompressionQuality"),
+					0,
+					100
+				);
+
+				this.allowsAlphaSplitting = new PropertyLayoutToggle(
+					"Split Alpha Channel",
+					this.serializedProperty.FindPropertyRelative("settings.m_AllowsAlphaSplitting")
+				);
+
+				if (this.platformSettingsGroup.Target == BuildTarget.Android) {
+					this.androidETC2FallbackOverride = new PropertyLayoutIntPopup(
+						"Override ETC2 fallback",
+						this.serializedProperty.FindPropertyRelative("settings.m_AndroidETC2FallbackOverride"),
+						this.androidETC2FallbackOptions,
+						this.androidETC2FallbackValues
+					);
+				}
 			}
 
 			public void SetFormatProperty(TextureImporterType textureImporterType)
 			{
 				Tuple<int[], string[]> formatValuesAndStrings;
 
-				if (this.Group.IsDefault) {
+				if (this.platformSettingsGroup.IsDefault) {
 					formatValuesAndStrings = InternalsAccess.GetDefaultTextureFormatValuesAndStrings(textureImporterType);
 				}
 				else {
-					formatValuesAndStrings = InternalsAccess.GetPlatformTextureFormatValuesAndStrings(textureImporterType, this.Group.Target);
+					formatValuesAndStrings = InternalsAccess.GetPlatformTextureFormatValuesAndStrings(textureImporterType, this.platformSettingsGroup.Target);
 				}
 
-				if (this.Format == null) {
-					this.Format = new PropertyLayoutIntPopup(
+				if (this.format == null) {
+					this.format = new PropertyLayoutIntPopup(
 						"Format",
 						this.serializedProperty.FindPropertyRelative("settings.m_TextureFormat"),
 						formatValuesAndStrings.Item2,
@@ -642,23 +699,76 @@ namespace Unitils
 					);
 				}
 				else {
-					this.Format.SetValues(formatValuesAndStrings.Item2, formatValuesAndStrings.Item1);
+					this.format.SetValues(formatValuesAndStrings.Item2, formatValuesAndStrings.Item1);
 				}
 			}
 
 			public void Draw()
 			{
-				if (!this.Group.IsDefault) {
-					this.isOverride.Draw();
+				if (!this.platformSettingsGroup.IsDefault) {
+					this.overridden.Draw();
 				}
-				GUI.enabled = this.Group.IsDefault || this.isOverride.Property.boolValue;
+				GUI.enabled = this.platformSettingsGroup.IsDefault || this.overridden.Property.boolValue;
 
-				this.MaxSize.Draw();
-				this.ResizeAlgorithm.Draw();
-				this.Format.Draw();
-				this.Compresssion.Draw();
+				this.maxSize.Draw();
+				this.resizeAlgorithm.Draw();
+				this.format.Draw();
+
+				TextureImporterFormat selectedImportFormat = (TextureImporterFormat)this.format.Property.intValue;
+
+				if (this.platformSettingsGroup.IsDefault && selectedImportFormat == TextureImporterFormat.Automatic) {
+					this.compresssion.Draw();
+				}
+				TextureImporterCompression selectedImportCompression = (TextureImporterCompression)this.compresssion.Property.intValue;
+
+				if (this.platformSettingsGroup.IsDefault) {
+					if (selectedImportFormat == TextureImporterFormat.Automatic && selectedImportCompression != TextureImporterCompression.Uncompressed) {
+						this.crunchedCompression.Draw();
+					}
+					if (this.crunchedCompression.Property.intValue > 0) {
+						this.compressionQualitySlider.Draw();
+					}
+				}
+				else {
+					bool isCrunchedFormat = InternalsAccess.IsCompressedCrunchTextureFormat((TextureFormat)(int)selectedImportFormat);
+
+					if (isCrunchedFormat || this.IsCompressionTarget(selectedImportFormat)) {
+						this.DrawPlatformCompressionQuality(this.platformSettingsGroup.Target, isCrunchedFormat, selectedImportFormat);
+					}
+
+					bool isETCPlatform = InternalsAccess.IsETC1SupportedByBuildTarget(this.platformSettingsGroup.Target);
+					bool isDealingWithSprite = this.selectedSpriteImportMode != SpriteImportMode.None;
+					bool isETCFormatSelected = InternalsAccess.IsTextureFormatETC1Compression((TextureFormat)(int)selectedImportFormat);
+
+					if (isETCPlatform && isDealingWithSprite && isETCFormatSelected) {
+						this.allowsAlphaSplitting.Draw();
+					}
+
+					if (this.platformSettingsGroup.Target == BuildTarget.Android) {
+						this.androidETC2FallbackOverride.Draw();
+					}
+				}
 
 				GUI.enabled = true;
+			}
+
+			private void DrawPlatformCompressionQuality(BuildTarget target, bool isCrunchedFormat, TextureImporterFormat textureFormat)
+			{
+				bool showAsEnum = !isCrunchedFormat
+					&& (InternalsAccess.PlatformHasIntegratedGPU(target) || (textureFormat == TextureImporterFormat.BC6H) || (textureFormat == TextureImporterFormat.BC7));
+
+				if (showAsEnum) {
+					this.compressionQualityPopup.Draw();
+				}
+				else {
+					this.compressionQualitySlider.Draw();
+				}
+			}
+
+			private bool IsCompressionTarget(TextureImporterFormat textureImporterFormat)
+			{
+				TextureImporterFormat[] compressionTargetFormats = InternalsAccess.GetCompressionTextureImporterFormats();
+				return compressionTargetFormats.ToList().Contains(textureImporterFormat);
 			}
 		}
 
@@ -693,6 +803,45 @@ namespace Unitils
 					.Invoke(null, args);
 
 				return new Tuple<int[], string[]>(args[2] as int[], args[3] as string[]);
+			}
+
+			public static bool IsCompressedCrunchTextureFormat(TextureFormat format)
+			{
+				return (bool)Type.GetType("UnityEditor.TextureUtil, UnityEditor")
+					.GetMethod("IsCompressedCrunchTextureFormat", BindingFlags.Static | BindingFlags.Public)
+					.Invoke(null, new object[] { format });
+			}
+
+			public static TextureImporterFormat[] GetCompressionTextureImporterFormats()
+			{
+				return (TextureImporterFormat[])Type.GetType("UnityEditor.TextureImporterInspector, UnityEditor")
+					.GetField("kFormatsWithCompressionSettings", BindingFlags.Static | BindingFlags.NonPublic)
+					.GetValue(null);
+			}
+
+			public static bool PlatformHasIntegratedGPU(BuildTarget target)
+			{
+				Type targetAttributesEnum = Type.GetType("UnityEditor.BuildTargetDiscovery+TargetAttributes, UnityEditor");
+				int targetEnumIndex = Enum.GetNames(targetAttributesEnum).ToList().IndexOf("HasIntegratedGPU");
+				object targetAttributesEnumType = Enum.GetValues(targetAttributesEnum).GetValue(targetEnumIndex);
+
+				return (bool)Type.GetType("UnityEditor.BuildTargetDiscovery, UnityEditor")
+					.GetMethod("PlatformHasFlag", BindingFlags.Static | BindingFlags.Public)
+					.Invoke(null, new object[] { target, targetAttributesEnumType });
+			}
+
+			public static bool IsETC1SupportedByBuildTarget(BuildTarget target)
+			{
+				return (bool)Type.GetType("UnityEditor.TextureImporter, UnityEditor")
+					.GetMethod("IsETC1SupportedByBuildTarget", BindingFlags.Static | BindingFlags.NonPublic)
+					.Invoke(null, new object[] { target });
+			}
+
+			public static bool IsTextureFormatETC1Compression(TextureFormat format)
+			{
+				return (bool)Type.GetType("UnityEditor.TextureImporter, UnityEditor")
+					.GetMethod("IsTextureFormatETC1Compression", BindingFlags.Static | BindingFlags.NonPublic)
+					.Invoke(null, new object[] { format });
 			}
 		}
 	}

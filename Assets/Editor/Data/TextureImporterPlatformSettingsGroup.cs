@@ -15,11 +15,6 @@ namespace Unitils
 		private BuildTarget target = default;
 		public BuildTarget Target => this.target;
 
-		#pragma warning disable 414
-		[SerializeField]
-		private bool isOverride = false;
-		#pragma warning restore 414
-
 		[SerializeField]
 		private TextureImporterPlatformSettings settings;
 		public TextureImporterPlatformSettings Settings => settings;
