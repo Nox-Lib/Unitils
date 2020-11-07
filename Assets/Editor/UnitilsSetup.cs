@@ -13,7 +13,7 @@ namespace Unitils
 		{
 			CreateFolder(rootFolder);
 			GenerateSystemData();
-			GenerateTextureImporterAutoSettings();
+			GenerateTextureImportSettingsOverride();
 
 			AssetDatabase.SaveAssets();
 			AssetDatabase.Refresh();
@@ -30,7 +30,7 @@ namespace Unitils
 			ScriptableObjectToAsset.Create<SystemData>(EditorTools.ToAssetPath(filePath));
 		}
 
-		private static void GenerateTextureImporterAutoSettings()
+		private static void GenerateTextureImportSettingsOverride()
 		{
 			string folderPath = Path.Combine(rootFolder, "Resources/Data/OverrideTextureImportSettings");
 			CreateFolder(folderPath);
