@@ -24,6 +24,11 @@ namespace Unitils
 		private void Apply()
 		{
 			SystemData systemData = SystemData.Instance;
+
+			if (!systemData.IsScreenEdgeMask) {
+				this.SafeActive(false);
+				return;
+			}
 			Vector2 maskSize = Utils.Screen.GetMargin(systemData);
 
 			this.maskLeft.rectTransform.SetSizeDeltaX(maskSize.x);
