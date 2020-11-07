@@ -7,7 +7,7 @@ namespace Unitils
 		private static SystemData instance = null;
 		public static SystemData Instance {
 			get {
-				return instance = instance ?? Resources.Load<SystemData>(DefineData.SYSTEM_DATA);
+				return instance = instance ?? (instance = Resources.Load<SystemData>(DefineData.SYSTEM_DATA));
 			}
 		}
 
