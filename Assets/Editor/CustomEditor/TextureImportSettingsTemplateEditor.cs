@@ -7,8 +7,8 @@ using System.Reflection;
 
 namespace Unitils
 {
-	[CustomEditor(typeof(TextureImporterSettingsTemplate))]
-	public class TextureImporterSettingsTemplateEditor : Editor
+	[CustomEditor(typeof(TextureImportSettingsTemplate))]
+	public class TextureImportSettingsTemplateEditor : Editor
 	{
 		private const string TEXTURE_IMPORTER_SHOW_ADVANCED = "TextureImporterShowAdvanced";
 		private const string TEXTURE_IMPORTER_PLATFORM_SHOW_DEFAULT = "TextureImporterPlatformShowDefault";
@@ -31,7 +31,7 @@ namespace Unitils
 			}
 		};
 
-		private TextureImporterSettingsTemplate importerSettingsTemplate;
+		private TextureImportSettingsTemplate importSettingsTemplate;
 		private Styles styles;
 		private bool showAdvanced;
 		private bool showPlatformDefault;
@@ -94,7 +94,7 @@ namespace Unitils
 
 		private void Initialize()
 		{
-			this.importerSettingsTemplate = this.target as TextureImporterSettingsTemplate;
+			this.importSettingsTemplate = this.target as TextureImportSettingsTemplate;
 			this.styles = this.styles ?? new Styles();
 
 			this.showAdvanced = EditorPrefs.GetBool(TEXTURE_IMPORTER_SHOW_ADVANCED);
@@ -263,19 +263,19 @@ namespace Unitils
 		{
 			this.platformDefault = new PlatformSettingsInspector(
 				this.serializedObject.FindProperty("defaultPlatform"),
-				this.importerSettingsTemplate.DefaultPlatform,
+				this.importSettingsTemplate.DefaultPlatform,
 				(TextureImporterType)this.textureType.Property.intValue,
 				(SpriteImportMode)this.spriteMode.Property.intValue
 			);
 
 			this.platformOverrides = new Dictionary<BuildTargetGroup, PlatformSettingsInspector>();
 
-			for (int i = 0; i < this.importerSettingsTemplate.PlatformGroups.Count; i++) {
+			for (int i = 0; i < this.importSettingsTemplate.PlatformGroups.Count; i++) {
 				this.platformOverrides.Add(
-					BuildPipeline.GetBuildTargetGroup(this.importerSettingsTemplate.PlatformGroups[i].Target),
+					BuildPipeline.GetBuildTargetGroup(this.importSettingsTemplate.PlatformGroups[i].Target),
 					new PlatformSettingsInspector(
 						this.serializedObject.FindProperty("platformGroups").GetArrayElementAtIndex(i),
-						this.importerSettingsTemplate.PlatformGroups[i],
+						this.importSettingsTemplate.PlatformGroups[i],
 						(TextureImporterType)this.textureType.Property.intValue,
 						(SpriteImportMode)this.spriteMode.Property.intValue
 					)
@@ -595,10 +595,10 @@ namespace Unitils
 				(int)AndroidETC2FallbackOverride.Quality32BitDownscaled
 			};
 
-			private readonly SerializedProperty serializedProperty;
-			private readonly TextureImporterPlatformSettingsGroup platformSettingsGroup;
-			private readonly TextureImporterType selectedTextureImporterType;
-			private readonly SpriteImportMode selectedSpriteImportMode;
+			private SerializedProperty serializedProperty;
+			private TextureImportPlatformSettingsGroup platformSettingsGroup;
+			private TextureImporterType selectedTextureImporterType;
+			private SpriteImportMode selectedSpriteImportMode;
 
 			private IPropertyLayout overridden;
 			private IPropertyLayout maxSize;
@@ -611,7 +611,7 @@ namespace Unitils
 			private IPropertyLayout allowsAlphaSplitting;
 			private IPropertyLayout androidETC2FallbackOverride;
 
-			public PlatformSettingsInspector(SerializedProperty serializedProperty, TextureImporterPlatformSettingsGroup platformSettingsGroup, TextureImporterType textureType, SpriteImportMode spriteMode)
+			public PlatformSettingsInspector(SerializedProperty serializedProperty, TextureImportPlatformSettingsGroup platformSettingsGroup, TextureImporterType textureType, SpriteImportMode spriteMode)
 			{
 				this.serializedProperty = serializedProperty;
 				this.platformSettingsGroup = platformSettingsGroup;
@@ -619,6 +619,8 @@ namespace Unitils
 				this.selectedSpriteImportMode = spriteMode;
 
 				bool isStandalone = BuildPipeline.GetBuildTargetGroup(this.platformSettingsGroup.Target) == BuildTargetGroup.Standalone;
+
+				this.SetName(isStandalone);
 
 				this.overridden = new PropertyLayoutToggleLeft(
 					isStandalone ? "Override for PC, Mac & Linux Standalone" : $"Override for {this.platformSettingsGroup.Target}",
@@ -679,15 +681,16 @@ namespace Unitils
 				}
 			}
 
-			public void SetFormatProperty(TextureImporterType textureImporterType)
+			public void SetFormatProperty(TextureImporterType textureType)
 			{
+				this.selectedTextureImporterType = textureType;
 				Tuple<int[], string[]> formatValuesAndStrings;
 
 				if (this.platformSettingsGroup.IsDefault) {
-					formatValuesAndStrings = InternalsAccess.GetDefaultTextureFormatValuesAndStrings(textureImporterType);
+					formatValuesAndStrings = InternalsAccess.GetDefaultTextureFormatValuesAndStrings(textureType);
 				}
 				else {
-					formatValuesAndStrings = InternalsAccess.GetPlatformTextureFormatValuesAndStrings(textureImporterType, this.platformSettingsGroup.Target);
+					formatValuesAndStrings = InternalsAccess.GetPlatformTextureFormatValuesAndStrings(textureType, this.platformSettingsGroup.Target);
 				}
 
 				if (this.format == null) {
@@ -714,15 +717,15 @@ namespace Unitils
 				this.resizeAlgorithm.Draw();
 				this.format.Draw();
 
-				TextureImporterFormat selectedImportFormat = (TextureImporterFormat)this.format.Property.intValue;
+				TextureImporterFormat selectedImporterFormat = (TextureImporterFormat)this.format.Property.intValue;
 
-				if (this.platformSettingsGroup.IsDefault && selectedImportFormat == TextureImporterFormat.Automatic) {
+				if (this.platformSettingsGroup.IsDefault && selectedImporterFormat == TextureImporterFormat.Automatic) {
 					this.compresssion.Draw();
 				}
-				TextureImporterCompression selectedImportCompression = (TextureImporterCompression)this.compresssion.Property.intValue;
+				TextureImporterCompression selectedImporterCompression = (TextureImporterCompression)this.compresssion.Property.intValue;
 
 				if (this.platformSettingsGroup.IsDefault) {
-					if (selectedImportFormat == TextureImporterFormat.Automatic && selectedImportCompression != TextureImporterCompression.Uncompressed) {
+					if (selectedImporterFormat == TextureImporterFormat.Automatic && selectedImporterCompression != TextureImporterCompression.Uncompressed) {
 						this.crunchedCompression.Draw();
 					}
 					if (this.crunchedCompression.Property.intValue > 0) {
@@ -730,15 +733,15 @@ namespace Unitils
 					}
 				}
 				else {
-					bool isCrunchedFormat = InternalsAccess.IsCompressedCrunchTextureFormat((TextureFormat)(int)selectedImportFormat);
+					bool isCrunchedFormat = InternalsAccess.IsCompressedCrunchTextureFormat((TextureFormat)(int)selectedImporterFormat);
 
-					if (isCrunchedFormat || this.IsCompressionTarget(selectedImportFormat)) {
-						this.DrawPlatformCompressionQuality(this.platformSettingsGroup.Target, isCrunchedFormat, selectedImportFormat);
+					if (isCrunchedFormat || this.IsCompressionTarget(selectedImporterFormat)) {
+						this.DrawPlatformCompressionQuality(this.platformSettingsGroup.Target, isCrunchedFormat, selectedImporterFormat);
 					}
 
 					bool isETCPlatform = InternalsAccess.IsETC1SupportedByBuildTarget(this.platformSettingsGroup.Target);
 					bool isDealingWithSprite = this.selectedSpriteImportMode != SpriteImportMode.None;
-					bool isETCFormatSelected = InternalsAccess.IsTextureFormatETC1Compression((TextureFormat)(int)selectedImportFormat);
+					bool isETCFormatSelected = InternalsAccess.IsTextureFormatETC1Compression((TextureFormat)(int)selectedImporterFormat);
 
 					if (isETCPlatform && isDealingWithSprite && isETCFormatSelected) {
 						this.allowsAlphaSplitting.Draw();
@@ -763,6 +766,12 @@ namespace Unitils
 				else {
 					this.compressionQualitySlider.Draw();
 				}
+			}
+
+			private void SetName(bool isStandalone)
+			{
+				if (this.platformSettingsGroup.IsDefault) return;
+				this.platformSettingsGroup.Settings.name = isStandalone ? "Standalone" : this.platformSettingsGroup.Target.ToString();
 			}
 
 			private bool IsCompressionTarget(TextureImporterFormat textureImporterFormat)

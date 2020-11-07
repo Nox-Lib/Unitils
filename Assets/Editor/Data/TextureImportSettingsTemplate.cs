@@ -5,22 +5,19 @@ using System;
 
 namespace Unitils
 {
-	public class TextureImporterSettingsTemplate : ScriptableObject
+	public class TextureImportSettingsTemplate : ScriptableObject
 	{
-		[SerializeField]
-		private TextureImporterSettings importerSettings;
+		[SerializeField] private TextureImporterSettings importerSettings;
 		public TextureImporterSettings ImporterSettings => this.importerSettings;
 
-		[SerializeField]
-		private TextureImporterPlatformSettingsGroup defaultPlatform;
-		public TextureImporterPlatformSettingsGroup DefaultPlatform => this.defaultPlatform;
+		[SerializeField] private TextureImportPlatformSettingsGroup defaultPlatform;
+		public TextureImportPlatformSettingsGroup DefaultPlatform => this.defaultPlatform;
 
-		[SerializeField]
-		private List<TextureImporterPlatformSettingsGroup> platformGroups;
-		public IReadOnlyList<TextureImporterPlatformSettingsGroup> PlatformGroups => this.platformGroups;
+		[SerializeField] private List<TextureImportPlatformSettingsGroup> platformGroups;
+		public IReadOnlyList<TextureImportPlatformSettingsGroup> PlatformGroups => this.platformGroups;
 
 
-		public TextureImporterSettingsTemplate()
+		public TextureImportSettingsTemplate()
 		{
 			#region TextureImporterSettings
 			this.importerSettings = new TextureImporterSettings
@@ -56,7 +53,7 @@ namespace Unitils
 			#endregion
 
 			#region TextureImporterPlatformSettings
-			this.defaultPlatform = new TextureImporterPlatformSettingsGroup();
+			this.defaultPlatform = new TextureImportPlatformSettingsGroup();
 
 			BuildTarget targetStandalone;
 			switch (Application.platform) {
@@ -73,23 +70,23 @@ namespace Unitils
 					throw new NotSupportedException($"{Application.platform} is unknown platform.");
 			}
 
-			this.platformGroups = new List<TextureImporterPlatformSettingsGroup>
+			this.platformGroups = new List<TextureImportPlatformSettingsGroup>
 			{
-				new TextureImporterPlatformSettingsGroup(
+				new TextureImportPlatformSettingsGroup(
 					targetStandalone,
 					new TextureImporterPlatformSettings
 					{
 						format = TextureImporterFormat.DXT1
 					}
 				),
-				new TextureImporterPlatformSettingsGroup(
+				new TextureImportPlatformSettingsGroup(
 					BuildTarget.iOS,
 					new TextureImporterPlatformSettings
 					{
 						format = TextureImporterFormat.PVRTC_RGB4
 					}
 				),
-				new TextureImporterPlatformSettingsGroup(
+				new TextureImportPlatformSettingsGroup(
 					BuildTarget.Android,
 					new TextureImporterPlatformSettings
 					{
