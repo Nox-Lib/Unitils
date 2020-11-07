@@ -439,7 +439,7 @@ namespace Unitils
 
 		private void DrawImporterSettingsCommonGUI()
 		{
-			InternalsAccess.WrapModePopup(this.wrapU, this.wrapV, this.wrapW, false, ref this.showPerAxisWrapModes);
+			InternalsAccess.WrapModePopup(this.wrapU, this.wrapV, this.wrapW, false, ref this.showPerAxisWrapModes, false);
 			this.filterMode.Draw();
 
 			bool showAniso = true;
@@ -775,9 +775,9 @@ namespace Unitils
 
 		private static class InternalsAccess
 		{
-			public static void WrapModePopup(SerializedProperty wrapU, SerializedProperty wrapV, SerializedProperty wrapW, bool isVolumeTexture, ref bool showPerAxisWrapModes)
+			public static void WrapModePopup(SerializedProperty wrapU, SerializedProperty wrapV, SerializedProperty wrapW, bool isVolumeTexture, ref bool showPerAxisWrapModes, bool enforcePerAxis)
 			{
-				object[] args = { wrapU, wrapV, wrapW, isVolumeTexture, null };
+				object[] args = { wrapU, wrapV, wrapW, isVolumeTexture, null, enforcePerAxis };
 				Type.GetType("UnityEditor.TextureInspector, UnityEditor")
 					.GetMethod("WrapModePopup", BindingFlags.Static | BindingFlags.NonPublic)
 					.Invoke(null, args);
