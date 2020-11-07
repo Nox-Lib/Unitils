@@ -26,8 +26,8 @@ namespace Unitils
 			[SerializeField, HideInInspector] private bool isValid = true;
 			public bool IsValid => this.isValid;
 
-			[SerializeField] private TextureImportSettingsTemplate template;
-			public TextureImportSettingsTemplate Template => this.template;
+			[SerializeField] private TextureImportSettingsPreset preset;
+			public TextureImportSettingsPreset Preset => this.preset;
 
 			[SerializeField] private string pathMatchPattern;
 			public string PathMatchPattern => this.pathMatchPattern;

@@ -40,9 +40,9 @@ namespace Unitils
 				ScriptableObjectToAsset.Create<TextureImportSettingsOverride>(EditorTools.ToAssetPath(filePath));
 			}
 
-			filePath = Path.Combine(folderPath, "Template.asset");
+			filePath = Path.Combine(folderPath, "Preset.asset");
 			if (!File.Exists(filePath)) {
-				ScriptableObjectToAsset.Create<TextureImportSettingsTemplate>(EditorTools.ToAssetPath(filePath));
+				ScriptableObjectToAsset.Create<TextureImportSettingsPreset>(EditorTools.ToAssetPath(filePath));
 			}
 		}
 

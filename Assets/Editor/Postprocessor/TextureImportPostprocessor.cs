@@ -17,7 +17,7 @@ namespace Unitils
 
 			TextureImportSettingsOverride.Configuration useConfiguration = configurations.FirstOrDefault(configuration =>
 			{
-				if (!configuration.Enabled || !configuration.IsValid || configuration.Template == null) {
+				if (!configuration.Enabled || !configuration.IsValid || configuration.Preset == null) {
 					return false;
 				}
 				if (!string.IsNullOrEmpty(configuration.PathMatchPattern) && !Regex.IsMatch(this.assetPath, configuration.PathMatchPattern)) {
@@ -40,14 +40,14 @@ namespace Unitils
 			TextureImporterSettings importerSettings = new TextureImporterSettings();
 			textureImporter.ReadTextureSettings(importerSettings);
 
-			TextureImportSettingsTemplate template = configuration.Template;
-			this.CopyTextureImporterSettings(template.ImporterSettings, importerSettings);
+			TextureImportSettingsPreset preset = configuration.Preset;
+			this.CopyTextureImporterSettings(preset.ImporterSettings, importerSettings);
 
 			TextureImporterPlatformSettings importerPlatformSettings = textureImporter.GetDefaultPlatformTextureSettings();
-			this.CopyTextureImporterPlatformSettings(template.DefaultPlatform.Settings, importerPlatformSettings);
+			this.CopyTextureImporterPlatformSettings(preset.DefaultPlatform.Settings, importerPlatformSettings);
 			textureImporter.SetPlatformTextureSettings(importerPlatformSettings);
 
-			foreach (TextureImportPlatformSettingsGroup platformGroup in template.PlatformGroups) {
+			foreach (TextureImportPlatformSettingsGroup platformGroup in preset.PlatformGroups) {
 				importerPlatformSettings = textureImporter.GetPlatformTextureSettings(platformGroup.Settings.name);
 				this.CopyTextureImporterPlatformSettings(platformGroup.Settings, importerPlatformSettings);
 				textureImporter.SetPlatformTextureSettings(importerPlatformSettings);

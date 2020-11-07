@@ -7,8 +7,8 @@ using System.Reflection;
 
 namespace Unitils
 {
-	[CustomEditor(typeof(TextureImportSettingsTemplate))]
-	public class TextureImportSettingsTemplateEditor : Editor
+	[CustomEditor(typeof(TextureImportSettingsPreset))]
+	public class TextureImportSettingsPresetEditor : Editor
 	{
 		private const string TEXTURE_IMPORTER_SHOW_ADVANCED = "TextureImporterShowAdvanced";
 		private const string TEXTURE_IMPORTER_PLATFORM_SHOW_DEFAULT = "TextureImporterPlatformShowDefault";
@@ -31,7 +31,7 @@ namespace Unitils
 			}
 		};
 
-		private TextureImportSettingsTemplate importSettingsTemplate;
+		private TextureImportSettingsPreset importSettingsPreset;
 		private Styles styles;
 		private bool showAdvanced;
 		private bool showPlatformDefault;
@@ -94,7 +94,7 @@ namespace Unitils
 
 		private void Initialize()
 		{
-			this.importSettingsTemplate = this.target as TextureImportSettingsTemplate;
+			this.importSettingsPreset = this.target as TextureImportSettingsPreset;
 			this.styles = this.styles ?? new Styles();
 
 			this.showAdvanced = EditorPrefs.GetBool(TEXTURE_IMPORTER_SHOW_ADVANCED);
@@ -263,19 +263,19 @@ namespace Unitils
 		{
 			this.platformDefault = new PlatformSettingsInspector(
 				this.serializedObject.FindProperty("defaultPlatform"),
-				this.importSettingsTemplate.DefaultPlatform,
+				this.importSettingsPreset.DefaultPlatform,
 				(TextureImporterType)this.textureType.Property.intValue,
 				(SpriteImportMode)this.spriteMode.Property.intValue
 			);
 
 			this.platformOverrides = new Dictionary<BuildTargetGroup, PlatformSettingsInspector>();
 
-			for (int i = 0; i < this.importSettingsTemplate.PlatformGroups.Count; i++) {
+			for (int i = 0; i < this.importSettingsPreset.PlatformGroups.Count; i++) {
 				this.platformOverrides.Add(
-					BuildPipeline.GetBuildTargetGroup(this.importSettingsTemplate.PlatformGroups[i].Target),
+					BuildPipeline.GetBuildTargetGroup(this.importSettingsPreset.PlatformGroups[i].Target),
 					new PlatformSettingsInspector(
 						this.serializedObject.FindProperty("platformGroups").GetArrayElementAtIndex(i),
-						this.importSettingsTemplate.PlatformGroups[i],
+						this.importSettingsPreset.PlatformGroups[i],
 						(TextureImporterType)this.textureType.Property.intValue,
 						(SpriteImportMode)this.spriteMode.Property.intValue
 					)
