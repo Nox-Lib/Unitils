@@ -23,7 +23,7 @@ namespace Unitils
 		{
 			{
 				TextureImporterType.Default,
-				TextureImporterShape.Texture2D | TextureImporterShape.TextureCube
+				TextureImporterShape.Texture2D
 			},
 			{
 				TextureImporterType.Sprite,
