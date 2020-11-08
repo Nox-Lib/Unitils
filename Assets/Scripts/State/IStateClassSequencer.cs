@@ -5,8 +5,8 @@
 		void Next(TState nextState);
 	}
 
-	public interface IStateClassSequencer<TState, TArgs>
+	public interface IStateClassSequencer<TState, TArg>
 	{
-		void Next(TState nextState, TArgs args);
+		void Next(TState nextState, TArg arg);
 	}
 }
