@@ -17,6 +17,16 @@ namespace Unitils
 		public static string ToAssetPath(string absolutePath) => absolutePath.Replace(Application.dataPath, "Assets");
 
 
+		public static string GetSelectionFolder()
+		{
+			string[] assetGUIDs = Selection.assetGUIDs;
+			if (assetGUIDs == null || assetGUIDs.Length <= 0) return "Assets/";
+
+			string assetPath = AssetDatabase.GUIDToAssetPath(assetGUIDs[0]);
+
+			return string.IsNullOrEmpty(Path.GetExtension(assetPath)) ? assetPath : Path.GetDirectoryName(assetPath);
+		}
+
 		public static List<string> GetSelectionAssets(Func<string, bool> predicate)
 		{
 			return GetSelectionAssets(predicate, SearchOption.AllDirectories);

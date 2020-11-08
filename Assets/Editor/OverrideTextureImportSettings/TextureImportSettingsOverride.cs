@@ -63,8 +63,8 @@ namespace Unitils
 		}
 
 
-		[MenuItem("Unitils/OverrideTextureImportSettings/Selection")]
-		[MenuItem("Assets/Unitils/OverrideTextureImportSettings/Selection")]
+		[MenuItem("Unitils/Override Texture Import Settings/Apply")]
+		[MenuItem("Assets/Unitils/Override Texture Import Settings/Apply")]
 		private static void Run()
 		{
 			List<string> assetPaths = EditorTools.GetSelectionAssets(assetPath => {
@@ -90,7 +90,7 @@ namespace Unitils
 				() => {
 					AssetDatabase.SaveAssets();
 					AssetDatabase.Refresh();
-					string logTitle = $"[OverrideTextureImportSettings - Selection] Results ({assetPaths.Count})";
+					string logTitle = $"[OverrideTextureImportSettings - Apply] Results ({assetPaths.Count})";
 					Debug.Log($"{logTitle} :\n-----\n{string.Join("\n", assetPaths)}\n-----");
 				}
 			);
