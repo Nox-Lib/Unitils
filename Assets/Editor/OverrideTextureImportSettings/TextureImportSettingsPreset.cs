@@ -5,7 +5,7 @@ using System;
 
 namespace Unitils
 {
-	public class TextureImportSettingsTemplate : ScriptableObject
+	public class TextureImportSettingsPreset : ScriptableObject
 	{
 		[SerializeField] private TextureImporterSettings importerSettings;
 		public TextureImporterSettings ImporterSettings => this.importerSettings;
@@ -17,7 +17,7 @@ namespace Unitils
 		public IReadOnlyList<TextureImportPlatformSettingsGroup> PlatformGroups => this.platformGroups;
 
 
-		public TextureImportSettingsTemplate()
+		public TextureImportSettingsPreset()
 		{
 			#region TextureImporterSettings
 			this.importerSettings = new TextureImporterSettings
