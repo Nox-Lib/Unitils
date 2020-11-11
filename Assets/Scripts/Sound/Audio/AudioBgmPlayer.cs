@@ -13,9 +13,14 @@ namespace Unitils
 			if (instance == null) {
 				instance = new GameObject("AudioBgmPlayer", typeof(AudioBgmPlayer)).GetComponent<AudioBgmPlayer>();
 				SceneManager.MoveGameObjectToScene(instance.gameObject, SceneManager.GetSceneByName(Define.SceneType.Unitils.Name));
+				instance.audioSource = instance.gameObject.AddComponent<AudioSource>();
+				instance.audioSource.playOnAwake = false;
 			}
 			ServiceLocator.Instance.Register<ISoundBgmProvider>(instance);
 		}
+
+
+		private AudioSource audioSource;
 
 
 		#region ISoundBgmProvider
@@ -71,6 +76,10 @@ namespace Unitils
 		}
 
 		public void Pause()
+		{
+		}
+
+		public void UnPause()
 		{
 		}
 

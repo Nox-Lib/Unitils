@@ -17,6 +17,7 @@ namespace Unitils
 		void Play(string key);
 		void Stop();
 		void Pause();
+		void UnPause();
 		float GetLength(string key);
 	}
 }
