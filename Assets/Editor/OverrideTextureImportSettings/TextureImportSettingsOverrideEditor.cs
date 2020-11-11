@@ -1,8 +1,7 @@
-using UnityEngine;
-using UnityEditor;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using UnityEditor;
 
 namespace Unitils
 {
