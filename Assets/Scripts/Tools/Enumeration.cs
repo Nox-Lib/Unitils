@@ -43,13 +43,13 @@ namespace Unitils
 		public static IEnumerable<T> GetAll<T>() where T : Enumeration
 		{
 			FieldInfo[] filedInfos = typeof(T).GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly);
-			return filedInfos.Select(f => f.GetValue(null)).Cast<T>();
+			return filedInfos.Select(_ => _.GetValue(null)).Cast<T>();
 		}
 
 		public static IEnumerable<Enumeration> GetAll(Type type)
 		{
 			FieldInfo[] filedInfos = type.GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly);
-			return filedInfos.Select(f => f.GetValue(null)).Cast<Enumeration>();
+			return filedInfos.Select(_ => _.GetValue(null)).Cast<Enumeration>();
 		}
 
 		public override bool Equals(object obj)

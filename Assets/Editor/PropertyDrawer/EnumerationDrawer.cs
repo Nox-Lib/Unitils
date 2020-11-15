@@ -18,14 +18,14 @@ namespace Unitils
 			SerializedProperty idProperty = property.FindPropertyRelative("id");
 			SerializedProperty nameProperty = property.FindPropertyRelative("name");
 
-			IEnumerable<Enumeration> enumeration = Enumeration.GetAll(this.fieldInfo.FieldType).OrderBy(x => x.Id);
+			IEnumerable<Enumeration> enumeration = Enumeration.GetAll(this.fieldInfo.FieldType).OrderBy(_ => _.Id);
 			List<Enumeration> list = enumeration.ToList();
 
 			int index = 0;
-			Enumeration choosed = list.FirstOrDefault(x => x.Id == idProperty.intValue);
+			Enumeration choosed = list.FirstOrDefault(_ => _.Id == idProperty.intValue);
 			if (choosed != null) index = Mathf.Max(list.IndexOf(choosed), 0);
 
-			index = EditorGUI.Popup(position, label.text, index, list.Select(x => x.Name).ToArray());
+			index = EditorGUI.Popup(position, label.text, index, list.Select(_ => _.Name).ToArray());
 			idProperty.intValue = list[index].Id;
 			nameProperty.stringValue = list[index].Name;
 		}

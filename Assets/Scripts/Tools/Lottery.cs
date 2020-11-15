@@ -13,7 +13,7 @@ namespace Unitils
 	{
 		public static T Draw<T>(IEnumerable<T> items) where T : ILottery
 		{
-			int rand = Random.Range(0, items.Sum(x => x.LotteryWeight));
+			int rand = Random.Range(0, items.Sum(_ => _.LotteryWeight));
 			int sum = 0;
 			foreach (T item in items) {
 				sum += item.LotteryWeight;

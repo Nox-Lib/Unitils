@@ -22,13 +22,13 @@ namespace Unitils
 
 			if (enumFilterAttribute.isIgnoreMode) {
 				enumItems = property.enumNames.ToList();
-				enumItems.RemoveAll(x => filterItems.Contains(x));
+				enumItems.RemoveAll(_ => filterItems.Contains(_));
 			}
 			else {
 				enumItems = new List<string>();
-				filterItems.ForEach(x => {
-					if (property.enumNames.Contains(x)) {
-						enumItems.Add(x);
+				filterItems.ForEach(_ => {
+					if (property.enumNames.Contains(_)) {
+						enumItems.Add(_);
 					}
 				});
 			}

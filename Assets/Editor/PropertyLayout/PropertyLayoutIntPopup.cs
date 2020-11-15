@@ -28,7 +28,7 @@ namespace Unitils
 		{
 			this.Properties = new SerializedProperty[] { serializedProperty };
 			this.Label = new GUIContent(label);
-			this.options = values.Select(x => x.ToString()).ToArray();
+			this.options = values.Select(_ => _.ToString()).ToArray();
 			this.values = values;
 		}
 

@@ -20,12 +20,12 @@ namespace Unitils
 			this.isPrepared = true;
 			if (this.graphics == null) return;
 			this.graphicColors = new List<ColorData<Graphic>>();
-			this.graphics.ForEach(x => this.graphicColors.Add(new ColorData<Graphic>(x, x.color)));
+			this.graphics.ForEach(_ => this.graphicColors.Add(new ColorData<Graphic>(_, _.color)));
 		}
 
 		protected override void SetColor()
 		{
-			this.graphicColors.ForEach(x => x.Target.SetColor(this.color));
+			this.graphicColors.ForEach(_ => _.Target.SetColor(this.color));
 		}
 
 		public override void Clear()

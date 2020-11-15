@@ -229,8 +229,8 @@ namespace Unitils
 			this.textureType = new PropertyLayoutIntPopup(
 				"Texture Type",
 				this.serializedObject.FindProperty("importerSettings.m_TextureType"),
-				this.enabledTextureImporterTypes.Select(x => this.styles.textureTypeOptions[x]).ToArray(),
-				this.enabledTextureImporterTypes.Select(x => (int)x).ToArray()
+				this.enabledTextureImporterTypes.Select(_ => this.styles.textureTypeOptions[_]).ToArray(),
+				this.enabledTextureImporterTypes.Select(_ => (int)_).ToArray()
 			);
 
 			this.textureShape = new PropertyLayoutIntPopup(

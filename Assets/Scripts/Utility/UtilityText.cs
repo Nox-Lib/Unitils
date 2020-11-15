@@ -27,7 +27,7 @@ namespace Unitils
 					return new int[0];
 				}
 				string[] splitted = separatedText.Split(separator);
-				return splitted.Select(x => int.Parse(x)).ToArray();
+				return splitted.Select(_ => int.Parse(_)).ToArray();
 			}
 
 			public static List<int> ToIntList(string separatedText, char separator)
@@ -36,7 +36,7 @@ namespace Unitils
 					return new List<int>();
 				}
 				string[] splitted = separatedText.Split(separator);
-				return splitted.Select(x => int.Parse(x)).ToList();
+				return splitted.Select(_ => int.Parse(_)).ToList();
 			}
 		}
 	}

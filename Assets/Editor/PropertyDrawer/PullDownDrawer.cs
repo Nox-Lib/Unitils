@@ -20,14 +20,14 @@ namespace Unitils
 
 			if (pullDownAttribute.isInt) {
 				index = Mathf.Max(0, Array.IndexOf(pullDownAttribute.intArray, property.intValue));
-				index = EditorGUI.Popup(position, label.text, index, pullDownAttribute.intArray.Select(x => x.ToString()).ToArray());
+				index = EditorGUI.Popup(position, label.text, index, pullDownAttribute.intArray.Select(_ => _.ToString()).ToArray());
 				property.intValue = pullDownAttribute.intArray[index];
 				return;
 			}
 
 			if (pullDownAttribute.isFloat) {
 				index = Mathf.Max(0, Array.IndexOf(pullDownAttribute.floatArray, property.floatValue));
-				index = EditorGUI.Popup(position, label.text, index, pullDownAttribute.floatArray.Select(x => x.ToString()).ToArray());
+				index = EditorGUI.Popup(position, label.text, index, pullDownAttribute.floatArray.Select(_ => _.ToString()).ToArray());
 				property.floatValue = pullDownAttribute.floatArray[index];
 				return;
 			}

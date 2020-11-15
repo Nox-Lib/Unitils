@@ -30,7 +30,7 @@ namespace Unitils
 			Sprite[] sprites = new Sprite[spriteAtlas.spriteCount];
 			spriteAtlas.GetSprites(sprites);
 
-			string[] spriteNames = sprites.Select(x => x.name.Replace("(Clone)", "")).ToArray();
+			string[] spriteNames = sprites.Select(_ => _.name.Replace("(Clone)", "")).ToArray();
 			window.iconAssetPaths = spriteNames;
 			window.iconLabels = spriteNames;
 
