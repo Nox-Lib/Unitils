@@ -9,9 +9,9 @@ namespace Unitils
 		private string[] options;
 		private int[] values;
 
-		public SerializedProperty[] Properties { get; private set; }
+		public SerializedProperty[] Properties { get; }
 		public SerializedProperty Property => this.Properties[0];
-		public GUIContent Label { get; private set; }
+		public GUIContent Label { get; }
 
 		public void Draw()
 		{

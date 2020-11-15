@@ -8,7 +8,7 @@ namespace Unitils
 {
 	public abstract class Enumeration<T> : Enumeration
 	{
-		public T Contents { get; private set; }
+		public T Contents { get; }
 
 		protected Enumeration(int id, string name, T contents) : base(id, name)
 		{

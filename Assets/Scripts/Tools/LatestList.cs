@@ -7,7 +7,7 @@ namespace Unitils
 	{
 		private readonly List<T> list;
 
-		public int Size { get; private set; }
+		public int Size { get; }
 		public int Count => this.list.Count;
 
 		public T this[int index] => this.list[index];

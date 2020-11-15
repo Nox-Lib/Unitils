@@ -9,8 +9,8 @@ namespace Unitils
 	{
 		public class Task
 		{
-			public Action Job { get; private set; }
-			public string Description { get; private set; }
+			public Action Job { get; }
+			public string Description { get; }
 
 			public Task(Action job, string description)
 			{

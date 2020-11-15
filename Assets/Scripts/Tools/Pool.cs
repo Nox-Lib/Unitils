@@ -6,7 +6,7 @@ namespace Unitils
 	{
 		private class PoolElement
 		{
-			public T Element { get; private set; }
+			public T Element { get; }
 			public bool Using;
 
 			public PoolElement(T element)

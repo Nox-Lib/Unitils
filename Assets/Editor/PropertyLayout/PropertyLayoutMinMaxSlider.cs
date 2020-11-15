@@ -9,9 +9,9 @@ namespace Unitils
 		private float maxLimit;
 		private bool isIntSnap;
 
-		public SerializedProperty[] Properties { get; private set; }
+		public SerializedProperty[] Properties { get; }
 		public SerializedProperty Property => null;
-		public GUIContent Label { get; private set; }
+		public GUIContent Label { get; }
 
 		public void Draw()
 		{

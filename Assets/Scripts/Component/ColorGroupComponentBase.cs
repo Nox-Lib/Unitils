@@ -10,8 +10,8 @@ namespace Unitils
 
 		protected struct ColorData<T>
 		{
-			public T Target { get; private set; }
-			public Color Source { get; private set; }
+			public T Target { get; }
+			public Color Source { get; }
 
 			public ColorData(T target, Color source)
 			{
