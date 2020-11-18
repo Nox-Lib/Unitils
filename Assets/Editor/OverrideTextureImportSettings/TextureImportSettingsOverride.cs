@@ -91,7 +91,7 @@ namespace Unitils
 					AssetDatabase.SaveAssets();
 					AssetDatabase.Refresh();
 					string logTitle = $"[OverrideTextureImportSettings - Apply] Results ({assetPaths.Count})";
-					Debug.Log($"{logTitle} :\n-----\n{string.Join("\n", assetPaths)}\n-----");
+					Debug.Log($"{logTitle}:\n-----\n{string.Join("\n", assetPaths)}\n-----");
 				}
 			);
 		}
