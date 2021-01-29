@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Unitils
 {
-	public static partial class Utility
+	public static partial class Utils
 	{
 		public static class Unity
 		{

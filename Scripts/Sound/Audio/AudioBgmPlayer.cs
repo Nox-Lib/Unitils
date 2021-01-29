@@ -140,7 +140,7 @@ namespace Unitils
 				this.audioSources[1].gameObject.name = "AudioSourceBgm_FadeOut";
 				this.audioSources[1].Stop();
 			}
-			this.audioSources[0] = Utility.Unity.CreateGameObject<AudioSourceBgm>("AudioSourceBgm", instance.transform);
+			this.audioSources[0] = Utils.Unity.CreateGameObject<AudioSourceBgm>("AudioSourceBgm", instance.transform);
 			this.audioSources[0].Volume = this.Volume;
 			this.audioSources[0].Pan = this.Pan;
 			this.audioSources[0].FadeTime = this.FadeTime;
