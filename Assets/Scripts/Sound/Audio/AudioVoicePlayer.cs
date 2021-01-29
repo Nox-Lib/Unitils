@@ -119,10 +119,9 @@ namespace Unitils
 
 		public float GetLength(string key)
 		{
-			if (!this.caches.ContainsKey(key) || this.caches[key].audioClip == null) {
-				return 0f;
-			}
-			return this.caches[key].audioClip.length;
+			return !this.caches.ContainsKey(key) || this.caches[key].audioClip == null
+				? 0f
+				: this.caches[key].audioClip.length;
 		}
 
 		#endregion

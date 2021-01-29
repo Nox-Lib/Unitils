@@ -12,5 +12,6 @@ namespace Unitils
 		void Unload(int group = 0);
 		void Play(string key, float volumeScale = 1f);
 		void Stop();
+		float GetLength(string key);
 	}
 }

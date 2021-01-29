@@ -102,6 +102,13 @@ namespace Unitils
 			this.audioSource.Stop();
 		}
 
+		public float GetLength(string key)
+		{
+			return !this.caches.ContainsKey(key) || this.caches[key].audioClip == null
+				? 0f
+				: this.caches[key].audioClip.length;
+		}
+
 		#endregion
 	}
 }
