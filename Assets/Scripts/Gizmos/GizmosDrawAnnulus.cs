@@ -80,10 +80,9 @@ namespace Unitils
 		private void DrawGizmoCircumference(float radius)
 		{
 			Vector3 originPosition = this.Origin.position + this.OriginOffset;
-			Vector3 centerPosition = originPosition + this.CenterOffset;
 
 			for (int i = 0; i < DIVISION_COUNT; i++) {
-				Vector3 from = originPosition + centerOffset;
+				Vector3 from = originPosition + this.centerOffset;
 				Vector3 to = from;
 				float radian = Mathf.PI * 2 / DIVISION_COUNT;
 				from.x += Mathf.Cos(radian * i) * radius;

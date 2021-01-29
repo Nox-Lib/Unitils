@@ -10,7 +10,7 @@ namespace Unitils
 		#endif
 
 		private RectTransform target = null;
-		private RectTransform Target { get { return this.target ?? (this.target = GetComponent<RectTransform>()); } }
+		private RectTransform Target { get { return this.target ??= GetComponent<RectTransform>(); } }
 
 		private void Awake()
 		{
@@ -69,7 +69,6 @@ namespace Unitils
 		private Rect GetEmulateSafeArea()
 		{
 			Rect rect = new Rect();
-			Vector2 screenSize = this.GetEmulateScreenSize();
 
 			if (Screen.width > Screen.height) {
 				Margin margin = new Margin { top = 0f, bottom = 21f, left = 44f, right = 44f };

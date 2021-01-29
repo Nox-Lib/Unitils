@@ -8,15 +8,15 @@ namespace Unitils
 	public class AtlasImageSelectionWindow : SelectionWindowBase
 	{
 		private string[] iconAssetPaths;
-		protected override string[] IconAssetPaths => iconAssetPaths;
+		protected override string[] IconAssetPaths => this.iconAssetPaths;
 
 		private string[] iconLabels;
-		protected override string[] IconLabels => iconLabels;
+		protected override string[] IconLabels => this.iconLabels;
 
 		protected override Texture2D LoadIconTexture(string assetPath)
 		{
 			Sprite sprite = this.spriteAtlas.GetSprite(assetPath);
-			return sprite?.texture;
+			return sprite != null ? sprite.texture : null;
 		}
 
 		private SpriteAtlas spriteAtlas;

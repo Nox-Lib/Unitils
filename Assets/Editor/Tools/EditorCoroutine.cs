@@ -9,8 +9,8 @@ namespace Unitils
 
 		public static void Start(IEnumerator enumerator)
 		{
-			EditorCoroutine editorCoroutine = new EditorCoroutine(enumerator);
-		}
+            new EditorCoroutine(enumerator);
+        }
 
 		public EditorCoroutine(IEnumerator enumerator)
 		{

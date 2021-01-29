@@ -76,7 +76,7 @@ namespace Unitils
 
 				if (GUILayout.Button("Apply")) {
 					ForegroundScreenEdgeMask instance = this.target as ForegroundScreenEdgeMask;
-					instance?.Apply();
+					if (instance != null) instance.Apply();
 				}
 			}
 		}

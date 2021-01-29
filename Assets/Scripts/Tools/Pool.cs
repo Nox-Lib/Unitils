@@ -16,7 +16,7 @@ namespace Unitils
 			}
 		}
 
-		private LinkedList<PoolElement> poolElements;
+		private readonly LinkedList<PoolElement> poolElements;
 		private int size;
 
 		public delegate T OnCreateElementDelegate(int index);

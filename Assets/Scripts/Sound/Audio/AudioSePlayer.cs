@@ -46,7 +46,7 @@ namespace Unitils
 
 		public void Load(string key, int group = 0)
 		{
-			Cache cache = null;
+			Cache cache;
 			if (this.caches.ContainsKey(key)) {
 				cache = this.caches[key];
 			}

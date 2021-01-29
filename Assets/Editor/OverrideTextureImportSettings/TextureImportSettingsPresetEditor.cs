@@ -95,7 +95,7 @@ namespace Unitils
 		private void Initialize()
 		{
 			this.importSettingsPreset = this.target as TextureImportSettingsPreset;
-			this.styles = this.styles ?? new Styles();
+			this.styles ??= new Styles();
 
 			this.showAdvanced = EditorPrefs.GetBool(TEXTURE_IMPORTER_SHOW_ADVANCED);
 			this.showPlatformDefault = EditorPrefs.GetBool(TEXTURE_IMPORTER_PLATFORM_SHOW_DEFAULT);
@@ -286,9 +286,8 @@ namespace Unitils
 
 		private void ValidateProperties(TextureImporterType selectedTextureImporterType)
 		{
-			bool isUnfind = false;
-			isUnfind = !Enum.IsDefined(typeof(TextureImporterShape), this.textureShape.Property.intValue);
-			isUnfind = isUnfind || !this.textureShapeCaps[selectedTextureImporterType].HasFlag((TextureImporterShape)this.textureShape.Property.intValue);
+            bool isUnfind = !Enum.IsDefined(typeof(TextureImporterShape), textureShape.Property.intValue);
+            isUnfind |= !this.textureShapeCaps[selectedTextureImporterType].HasFlag((TextureImporterShape)this.textureShape.Property.intValue);
 
 			if (isUnfind) {
 				Array enumValues = Enum.GetValues(typeof(TextureImporterShape));

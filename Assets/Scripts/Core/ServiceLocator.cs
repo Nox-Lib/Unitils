@@ -6,7 +6,7 @@ namespace Unitils
 	public class ServiceLocator
 	{
 		private static ServiceLocator instance = null;
-		public static ServiceLocator Instance => instance ?? (instance = new ServiceLocator());
+		public static ServiceLocator Instance => instance ??= new ServiceLocator();
 
 		private readonly Dictionary<Type, object> container = new Dictionary<Type, object>();
 

@@ -8,7 +8,6 @@ namespace Unitils
 	{
 		private const string IS_SYSTEM_DATA_SYSTEM = "IS_SYSTEM_DATA_SYSTEM";
 		private const string IS_SYSTEM_DATA_SCREEN = "IS_SYSTEM_DATA_SCREEN";
-		private const string IS_SYSTEM_DATA_FRAMEWORK = "IS_SYSTEM_DATA_FRAMEWORK";
 
 		public override void OnInspectorGUI()
 		{
