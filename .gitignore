@@ -6,8 +6,7 @@ Assets/Externals.meta
 Assets/Plugins/
 Assets/Plugins.meta
 
-Assets/Resources/DOTweenSettings.asset
-Assets/Resources/DOTweenSettings.asset.meta
+.vsconfig
 
 # This .gitignore file should be placed at the root of your Unity project directory
 #
