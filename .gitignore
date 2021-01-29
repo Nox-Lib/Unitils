@@ -1,10 +1,14 @@
-Assets/UnitilsApps/
-Assets/UnitilsApps.meta
+Logs/
+Packages/
+ProjectSettings/
 
-Assets/Externals/
-Assets/Externals.meta
-Assets/Plugins/
-Assets/Plugins.meta
+UnitilsApps/
+UnitilsApps.meta
+
+Externals/
+Externals.meta
+Plugins/
+Plugins.meta
 
 .vsconfig
 
