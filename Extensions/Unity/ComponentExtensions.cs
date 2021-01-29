@@ -8,5 +8,10 @@ namespace Unitils
 		{
 			if (self != null) self.gameObject.SafeActive(isActive);
 		}
+
+		public static void DestoryGameObject(this Component self)
+		{
+			if (self != null) self.gameObject.SafeDestory();
+		}
 	}
 }

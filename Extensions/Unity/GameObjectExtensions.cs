@@ -9,6 +9,11 @@ namespace Unitils
 			if (self != null) self.SetActive(isActive);
 		}
 
+		public static void SafeDestory(this GameObject self)
+		{
+			if (self != null) Object.Destroy(self);
+		}
+
 		public static T GetOrAddComponent<T>(this GameObject self) where T : Component
 		{
 			if (self == null) return null;

@@ -5,11 +5,33 @@ namespace Unitils
 	public class AudioSourceBgm : MonoBehaviour
 	{
 		private AudioSource audioSource;
-		private float fadeInTime;
-		private float fadeOutTime;
 		private BGMState state;
+		private float volume = 1f;
+		private float volumeFadeScale = 1f;
 
-		public bool IsRuntimeFadeOut { protected set; get; }
+		public bool IsRuntimeFade => this.state is FadeInState || this.state is FadeOutState;
+		public bool IsPlaying => this.state is FadeInState || this.state is PlayingState;
+		public string PlayClipName => this.audioSource.clip != null ? this.audioSource.clip.name : "";
+
+		public float Volume {
+			get { return this.volume; }
+			set {
+				this.volume = Mathf.Clamp01(value);
+				this.audioSource.volume = Mathf.Clamp01(this.volume * this.volumeFadeScale);
+			}
+		}
+
+		public float Pan {
+			get { return this.audioSource.panStereo; }
+			set { this.audioSource.panStereo = Mathf.Clamp(value, -1f, 1f); }
+		}
+
+		public float FadeTime { get; set; } = 0.5f;
+
+		public float Time {
+			get { return this.audioSource.time; }
+			set { this.audioSource.time = value; }
+		}
 
 
 		private void Awake()
@@ -26,29 +48,39 @@ namespace Unitils
 		}
 
 
-		public void Play(AudioClip audioClip)
+		public void Play(AudioClip audioClip, bool isLoop)
 		{
 			if (audioClip == null) return;
 
-			this.audioSource.clip = audioClip;
+			if (this.PlayClipName == audioClip.name) {
+				if (this.IsPlaying) return;
+			}
+			else {
+				this.audioSource.clip = audioClip;
+			}
+
+			if (!(this.state is FadeOutState)) this.audioSource.volume = 0f;
+
+			this.audioSource.loop = isLoop;
 			this.state = new WaitState(this);
 			this.state.Play();
 		}
 
-		public void Stop(float fadeTime)
+		public void Stop()
 		{
-			this.fadeOutTime = fadeTime;
+			if (this.state == null) return;
 			this.state.Stop();
-			this.state = null;
 		}
 
 		public void Pause()
 		{
+			if (this.state == null) return;
 			this.state.Pause();
 		}
 
 		public void UnPause()
 		{
+			if (this.state == null) return;
 			this.state.Play();
 		}
 
@@ -76,8 +108,7 @@ namespace Unitils
 
 			public override void Play()
 			{
-				this.self.IsRuntimeFadeOut = true;
-				if (this.self.fadeInTime > 0f) {
+				if (this.self.FadeTime > 0f) {
 					this.self.state = new FadeInState(this.self);
 				}
 				else {
@@ -89,11 +120,12 @@ namespace Unitils
 		class FadeInState : BGMState
 		{
 			private float timer;
+			private float startVolume;
 
 			public FadeInState(AudioSourceBgm bgmPlayer) : base(bgmPlayer)
 			{
 				this.self.audioSource.Play();
-				this.self.audioSource.volume = 0f;
+				this.startVolume = this.self.audioSource.volume;
 			}
 
 			public override void Pause()
@@ -108,10 +140,13 @@ namespace Unitils
 
 			public override void Update()
 			{
-				this.timer += Time.unscaledDeltaTime;
-				this.self.audioSource.volume = this.timer / this.self.fadeInTime;
+				this.timer += UnityEngine.Time.unscaledDeltaTime;
+				this.self.volumeFadeScale = Mathf.Max(this.startVolume, this.timer / this.self.FadeTime);
+				this.self.audioSource.volume = Mathf.Clamp01(this.self.volume * this.self.volumeFadeScale);
 
-				if (this.timer >= this.self.fadeInTime) {
+				if (this.timer >= this.self.FadeTime) {
+					this.self.volumeFadeScale = 1f;
+					this.self.audioSource.volume = 1f;
 					this.self.state = new PlayingState(this.self);
 				}
 			}
@@ -163,8 +198,12 @@ namespace Unitils
 		class FadeOutState : BGMState
 		{
 			private float timer;
+			private float startVolume;
 
-			public FadeOutState(AudioSourceBgm bgmPlayer) : base(bgmPlayer) {}
+			public FadeOutState(AudioSourceBgm bgmPlayer) : base(bgmPlayer)
+			{
+				this.startVolume = this.self.audioSource.volume;
+			}
 
 			public override void Pause()
 			{
@@ -173,12 +212,13 @@ namespace Unitils
 
 			public override void Update()
 			{
-				this.timer += Time.unscaledDeltaTime;
-				this.self.audioSource.volume = 1f - (this.timer / this.self.fadeOutTime);
+				this.timer += UnityEngine.Time.unscaledDeltaTime;
+				this.self.volumeFadeScale = Mathf.Min(this.startVolume, 1f - (this.timer / this.self.FadeTime));
+				this.self.audioSource.volume = Mathf.Clamp01(this.self.volume * this.self.volumeFadeScale);
 
-				if (this.timer >= this.self.fadeOutTime) {
+				if (this.timer >= this.self.FadeTime) {
+					this.self.volumeFadeScale = 0f;
 					this.self.audioSource.volume = 0f;
-					this.self.IsRuntimeFadeOut = false;
 					this.self.audioSource.Stop();
 					this.self.state = new WaitState(this.self);
 				}
