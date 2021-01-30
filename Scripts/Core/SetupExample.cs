@@ -10,10 +10,10 @@ namespace Unitils
 			AudioSePlayer.Activation();
 			AudioVoicePlayer.Activation();
 
-			ISoundSeProvider soundSe = ServiceLocator.Instance.GetService<ISoundSeProvider>();
+			ISoundSeProvider soundSePlayer = ServiceLocator.Instance.GetService<ISoundSeProvider>();
 			IEnumerable<string> buttonSoundNames = ButtonSoundData.Instance.GetSoundNames();
 			foreach (string soundName in buttonSoundNames) {
-				soundSe.Load(soundName);
+				soundSePlayer.Load(soundName);
 			}
 		}
 	}
