@@ -47,9 +47,10 @@ namespace Unitils
 			if (!this.enabled) return;
 
 			this.LoadSound();
+			if (this.sound == null || this.soundData == null) return;
 
 			string soundName = this.soundData.Get(this.soundType);
-			if (this.sound == null || string.IsNullOrEmpty(soundName)) return;
+			if (string.IsNullOrEmpty(soundName)) return;
 
 			this.sound.Volume = this.volume;
 			this.sound.Pan = this.pan;

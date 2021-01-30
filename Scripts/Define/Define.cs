@@ -6,6 +6,8 @@
 		public const string BUTTON_SOUND_DATA = "Data/ButtonSoundData";
 		public const string TEXTURE_IMPORT_SETTINGS_OVERRIDE = "Data/OverrideTextureImportSettings/Configurations";
 
+		public const string SAMPLE_SE = "Sounds/sample";
+
 		public enum ScreenMode
 		{
 			Fixed = 0,

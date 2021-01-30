@@ -32,7 +32,7 @@ namespace Unitils
 			for (int i = 0; i < types.Length; i++) {
 				Define.ButtonSoundType enumType = (Define.ButtonSoundType)types.GetValue(i);
 				if (enumType == Define.ButtonSoundType.None) continue;
-				this.list.Add(new Pair { type = enumType, soundName = "Sounds/sample" });
+				this.list.Add(new Pair { type = enumType, soundName = Define.SAMPLE_SE });
 			}
 		}
 
