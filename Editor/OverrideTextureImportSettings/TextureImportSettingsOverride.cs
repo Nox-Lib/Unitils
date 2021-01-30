@@ -12,7 +12,7 @@ namespace Unitils
 		private static TextureImportSettingsOverride instance = null;
 		public static TextureImportSettingsOverride Instance {
 			get {
-				return instance = instance ??= Resources.Load<TextureImportSettingsOverride>(DefineData.TEXTURE_IMPORT_SETTINGS_OVERRIDE);
+				return instance = instance ??= Resources.Load<TextureImportSettingsOverride>(Define.TEXTURE_IMPORT_SETTINGS_OVERRIDE);
 			}
 		}
 

@@ -13,6 +13,7 @@ namespace Unitils
 		{
 			CreateFolder(rootFolder);
 			GenerateSystemData();
+			GenerateButtonSoundData();
 			GenerateTextureImportSettingsOverride();
 
 			AssetDatabase.SaveAssets();
@@ -28,6 +29,16 @@ namespace Unitils
 			string filePath = Path.Combine(folderPath, "SystemData.asset");
 			if (File.Exists(filePath)) return;
 			ScriptableObjectToAsset.Create<SystemData>(EditorTools.ToAssetPath(filePath));
+		}
+
+		private static void GenerateButtonSoundData()
+		{
+			string folderPath = Path.Combine(rootFolder, "Resources/Data");
+			CreateFolder(folderPath);
+
+			string filePath = Path.Combine(folderPath, "ButtonSoundData.asset");
+			if (File.Exists(filePath)) return;
+			ScriptableObjectToAsset.Create<ButtonSoundData>(EditorTools.ToAssetPath(filePath));
 		}
 
 		private static void GenerateTextureImportSettingsOverride()

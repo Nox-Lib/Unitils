@@ -25,7 +25,7 @@ namespace Unitils
 
 		protected override void SetColor()
 		{
-			this.graphicColors.ForEach(_ => _.Target.SetColor(this.color));
+			this.graphicColors.ForEach(_ => _.Target.SetColor(this.color * _.Source));
 		}
 
 		public override void Clear()
@@ -38,7 +38,7 @@ namespace Unitils
 		public void Add(Graphic graphic)
 		{
 			if (!this.isPrepared) this.Prepare();
-			if (graphic == null) return;
+			if (graphic == null || this.graphics.Contains(graphic)) return;
 			this.graphics.Add(graphic);
 			this.graphicColors.Add(new ColorData<Graphic>(graphic, graphic.color));
 		}
