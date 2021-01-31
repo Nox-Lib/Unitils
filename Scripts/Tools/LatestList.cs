@@ -3,12 +3,15 @@ using System.Collections.Generic;
 
 namespace Unitils
 {
-	public class LatestList<T> : IEnumerable
+	public class LatestList<T> : IEnumerable<T>
 	{
 		private readonly List<T> list;
 
 		public int Size { get; }
 		public int Count => this.list.Count;
+
+		public T First => this.list.Count <= 0 ? default : this.list[0];
+		public T Last => this.list.Count <= 0 ? default : this.list[this.Count - 1];
 
 		public T this[int index] => this.list[index];
 
@@ -47,7 +50,12 @@ namespace Unitils
 			}
 		}
 
-		public IEnumerator GetEnumerator()
+		public IEnumerator<T> GetEnumerator()
+		{
+			return this.list.GetEnumerator();
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
 		{
 			return this.list.GetEnumerator();
 		}

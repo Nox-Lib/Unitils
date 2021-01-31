@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using System.Linq;
 
 namespace Unitils
 {
@@ -11,10 +11,7 @@ namespace Unitils
 			AudioVoicePlayer.Activation();
 
 			ISoundSeProvider soundSePlayer = ServiceLocator.Instance.GetService<ISoundSeProvider>();
-			IEnumerable<string> buttonSoundNames = ButtonSoundData.Instance.GetSoundNames();
-			foreach (string soundName in buttonSoundNames) {
-				soundSePlayer.Load(soundName);
-			}
+			ButtonSoundData.Instance.GetSoundNames().ToList().ForEach(_ => soundSePlayer.Load(_));
 		}
 	}
 }
