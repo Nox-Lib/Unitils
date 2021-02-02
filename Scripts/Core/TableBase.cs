@@ -38,9 +38,13 @@ namespace Unitils
 				int mid = (int)(((uint)max + (uint)min) >> 1);
 				TKey selected = indexSelector(this.source[mid]);
 				int found = cmparer.Compare(selected, key);
-				if (found == 0) { return this.source[mid]; }
-				if (found < 0) { min = mid + 1; }
-				else { max = mid - 1; }
+				if (found == 0) return this.source[mid];
+				if (found < 0) {
+					min = mid + 1;
+				}
+				else {
+					max = mid - 1;
+				}
 			}
 			return this.ThrowKeyNotFound(key);
 		}

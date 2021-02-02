@@ -10,9 +10,9 @@ namespace Unitils
 		public static RangeList<T> Empty => new RangeList<T>(null, -1, -1);
 
 		private readonly T[] ordered;
-		private int min;
-		private int max;
-		private bool hasValue;
+		private readonly int min;
+		private readonly int max;
+		private readonly bool hasValue;
 
 		public int Count => this.hasValue ? this.max - this.min + 1 : 0;
 		public T First => this[0];
