@@ -6,5 +6,10 @@ namespace Unitils
 	{
 		[SerializeField] private T[] list;
 		public T[] Data => this.list;
+
+		public JsonSerializableArray(T[] array)
+		{
+			this.list = array;
+		}
 	}
 }

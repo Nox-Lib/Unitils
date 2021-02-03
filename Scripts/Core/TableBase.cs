@@ -3,25 +3,29 @@ using System.Collections.Generic;
 
 namespace Unitils
 {
-	public abstract class TableBase<T>
+	public abstract class TableBase<TElement, TPrimaryKey>
 	{
-		protected T[] source;
-		public RangeList<T> All => new RangeList<T>(this.source, 0, this.source.Length);
+		protected abstract Func<TElement, TPrimaryKey> PrimaryKeySelector { get; }
 
-		protected TableBase(T[] source)
+		public RangeList<TElement> All => new RangeList<TElement>(this.source, 0, this.source.Length);
+
+		protected TElement[] source;
+
+		protected TableBase(TElement[] source)
 		{
 			this.source = source;
+			this.source = this.CloneAndSortBy(this.PrimaryKeySelector, Comparer<TPrimaryKey>.Default);
 		}
 
-		protected T ThrowKeyNotFound<TKey>(TKey key)
+		protected TElement ThrowKeyNotFound<TKey>(TKey key)
 		{
-			throw new KeyNotFoundException($"{typeof(T).FullName} key: {key}");
+			throw new KeyNotFoundException($"{typeof(TElement).FullName} key: {key}");
 		}
 
-		protected T[] CloneAndSortBy<TKey>(Func<T, TKey> indexSelector, IComparer<TKey> cmparer)
+		protected TElement[] CloneAndSortBy<TKey>(Func<TElement, TKey> indexSelector, IComparer<TKey> cmparer)
 		{
 			TKey[] keys = new TKey[this.source.Length];
-			T[] items = new T[this.source.Length];
+			TElement[] items = new TElement[this.source.Length];
 			for (int i = 0; i < this.source.Length; i++) {
 				keys[i] = indexSelector(this.source[i]);
 				items[i] = this.source[i];
@@ -30,7 +34,7 @@ namespace Unitils
 			return items;
 		}
 
-		protected T FindBy<TKey>(Func<T, TKey> indexSelector, IComparer<TKey> cmparer, TKey key)
+		protected TElement FindBy<TKey>(Func<TElement, TKey> indexSelector, IComparer<TKey> cmparer, TKey key)
 		{
 			int min = 0;
 			int max = this.source.Length - 1;
@@ -49,18 +53,18 @@ namespace Unitils
 			return this.ThrowKeyNotFound(key);
 		}
 
-		protected RangeList<T> FindMany<TKey>(T[] indexKeys, Func<T, TKey> keySelector, IComparer<TKey> comparer, TKey key)
+		protected RangeList<TElement> FindMany<TKey>(TElement[] indexKeys, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, TKey key)
 		{
 			int min = this.LowerBound(indexKeys, 0, indexKeys.Length, key, keySelector, comparer);
-			if (min == -1) return RangeList<T>.Empty;
+			if (min == -1) return RangeList<TElement>.Empty;
 
 			int max = this.UpperBound(indexKeys, 0, indexKeys.Length, key, keySelector, comparer);
-			if (max == -1) return RangeList<T>.Empty;
+			if (max == -1) return RangeList<TElement>.Empty;
 
-			return new RangeList<T>(indexKeys, min, max);
+			return new RangeList<TElement>(indexKeys, min, max);
 		}
 
-		private int LowerBound<TKey>(T[] array, int min, int max, TKey key, Func<T, TKey> selector, IComparer<TKey> comparer)
+		protected int LowerBound<TKey>(TElement[] array, int min, int max, TKey key, Func<TElement, TKey> selector, IComparer<TKey> comparer)
 		{
 			while (min < max) {
 				int mid = min + ((max - min) >> 1);
@@ -80,7 +84,7 @@ namespace Unitils
 			return (comparer.Compare(key, selector(array[index])) == 0) ? index : -1;
 		}
 
-		private int UpperBound<TKey>(T[] array, int min, int max, TKey key, Func<T, TKey> selector, IComparer<TKey> comparer)
+		protected int UpperBound<TKey>(TElement[] array, int min, int max, TKey key, Func<TElement, TKey> selector, IComparer<TKey> comparer)
 		{
 			while (min < max) {
 				int mid = min + ((max - min) >> 1);
