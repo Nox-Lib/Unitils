@@ -12,7 +12,8 @@ namespace Unitils
 
 		public T GetService<T>() where T : class
 		{
-			return this.container[typeof(T)] as T;
+			Type type = typeof(T);
+			return this.container.ContainsKey(type) ? this.container[type] as T : null;
 		}
 
 		public void Register<T>(T service) where T : class

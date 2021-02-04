@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using DG.Tweening;
 
@@ -42,8 +43,11 @@ namespace Unitils
 			set { this.triggerDownType = value; }
 		}
 
+		[SerializeField] private bool canAlsoClick = false;
+
 		[SerializeField] private float accelerationTime = 1.3f;
 		[SerializeField] private float acceleratedInterval = 0.1f;
+		[SerializeField] private bool isDontInvokeAtFirst = false;
 		[SerializeField] private bool isPlaySoundOnEveryInvoke = true;
 
 		[SerializeField] private bool isEnabledAnimation = true;
@@ -54,6 +58,9 @@ namespace Unitils
 		[SerializeField] private Color enteredColor = new Color32(255, 255, 255, 255);
 		[SerializeField] private Color pressedColor = new Color32(180, 180, 180, 255);
 		[SerializeField] private Color disabledColor = new Color32(180, 180, 180, 255);
+
+		[SerializeField] protected UnityEvent onLongPressedEvent = new UnityEvent();
+		public UnityEvent OnLongPressedEvent { get { return this.onLongPressedEvent; } }
 
 		private bool isStarted;
 		private bool isPressed;
@@ -88,7 +95,7 @@ namespace Unitils
 			if (this.triggerDownType == TriggerDownType.DownLong) {
 				bool isInvoke = (Time.realtimeSinceStartup - this.pressedTime) > this.Interval;
 				if (!isInvoke || this.isInvokedDownLong) return;
-				this.onEvent.Invoke();
+				this.onLongPressedEvent.Invoke();
 				this.PlaySound();
 				this.isInvokedDownLong = true;
 				return;
@@ -192,21 +199,37 @@ namespace Unitils
 		{
 			this.isPressed = true;
 			this.SetState(State.Press);
+
 			if (this.trigger == Define.ButtonTrigger.Down) {
+				this.pressedTime = Time.realtimeSinceStartup;
+				this.invokedTime = this.pressedTime;
+
 				if (this.triggerDownType == TriggerDownType.DownLong) {
 					this.isInvokedDownLong = false;
+					return;
 				}
-				else {
+
+				bool isInvoke = this.triggerDownType == TriggerDownType.DownOnce;
+				isInvoke |= !this.isDontInvokeAtFirst && this.triggerDownType == TriggerDownType.DownKeep;
+				isInvoke |= !this.isDontInvokeAtFirst && this.triggerDownType == TriggerDownType.DownKeepAcceleration;
+
+				if (isInvoke) {
 					this.onEvent.Invoke();
 					this.PlaySound();
 				}
-				this.pressedTime = Time.realtimeSinceStartup;
-				this.invokedTime = this.pressedTime;
 			}
 		}
 
 		public void OnPointerUp(PointerEventData eventData)
 		{
+			bool isLongPress = this.isPressed
+				&& this.trigger == Define.ButtonTrigger.Down
+				&& this.triggerDownType == TriggerDownType.DownLong;
+
+			if (isLongPress && this.canAlsoClick && !this.isInvokedDownLong) {
+				this.onEvent.Invoke();
+				this.PlaySound();
+			}
 			this.isPressed = this.isInvokedDownLong = false;
 			this.SetState(State.Normal);
 		}
