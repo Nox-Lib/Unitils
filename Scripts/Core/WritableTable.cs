@@ -6,6 +6,8 @@ namespace Unitils
 {
 	public abstract class WritableTable<TElement, TPrimaryKey> : TableBase<TElement, TPrimaryKey>
 	{
+		private List<TElement> list = null;
+
 		public WritableTable(TElement[] source) : base(source) {}
 
 		public string Serialize()
@@ -15,25 +17,24 @@ namespace Unitils
 
 		public void Add(TElement item)
 		{
-			int length = this.source.Length + 1;
-			TPrimaryKey[] keys = new TPrimaryKey[length];
-			TElement[] items = new TElement[length];
-			for (int i = 0; i < this.source.Length; i++) {
-				keys[i] = this.PrimaryKeySelector(this.source[i]);
-				items[i] = this.source[i];
+			if (this.Exists(this.PrimaryKeySelector, Comparer<TPrimaryKey>.Default, item)) {
+				throw new ArgumentException($"already exists primary key: {this.PrimaryKeySelector(item)}");
 			}
-			keys[length - 1] = this.PrimaryKeySelector(item);
-			items[length - 1] = item;
-			Array.Sort(keys, items, 0, length, Comparer<TPrimaryKey>.Default);
-			this.source = items;
+			if (this.list == null) this.list = new List<TElement>(this.source);
+
+			this.list.Add(item);
+
+			Comparer<TPrimaryKey> comparer = Comparer<TPrimaryKey>.Default;
+			this.list.Sort((a, b) => comparer.Compare(this.PrimaryKeySelector(a), this.PrimaryKeySelector(b)));
+
+			this.source = this.list.ToArray();
 		}
 
 		public void RemoveAt(int index)
 		{
-			TElement[] newArray = new TElement[this.source.Length - 1];
-			Array.Copy(this.source, 0, newArray, 0, index);
-			Array.Copy(this.source, index + 1, newArray, index, this.source.Length - index - 1);
-			this.source = newArray;
+			if (this.list == null) this.list = new List<TElement>(this.source);
+			this.list.RemoveAt(index);
+			this.source = this.list.ToArray();
 		}
 	}
 }

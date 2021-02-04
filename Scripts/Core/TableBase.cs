@@ -34,6 +34,25 @@ namespace Unitils
 			return items;
 		}
 
+		protected bool Exists<TKey>(Func<TElement, TKey> indexSelector, IComparer<TKey> cmparer, TElement element)
+		{
+			int min = 0;
+			int max = this.source.Length - 1;
+			while (min <= max) {
+				int mid = (int)(((uint)max + (uint)min) >> 1);
+				TKey selected = indexSelector(this.source[mid]);
+				int found = cmparer.Compare(selected, indexSelector(element));
+				if (found == 0) return true;
+				if (found < 0) {
+					min = mid + 1;
+				}
+				else {
+					max = mid - 1;
+				}
+			}
+			return false;
+		}
+
 		protected TElement FindBy<TKey>(Func<TElement, TKey> indexSelector, IComparer<TKey> cmparer, TKey key)
 		{
 			int min = 0;
