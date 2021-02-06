@@ -35,7 +35,7 @@ namespace Unitils
 		{
 			this.inputFolder = "../TableGenerator";
 			this.classOutputFolder = "Tables";
-			this.dataOutputFolder = "Tables";
+			this.dataOutputFolder = "StreamingAssets/Tables";
 			this.folders = new List<FolderData>();
 		}
 	}

@@ -23,7 +23,9 @@ namespace Unitils
 		public static void GenerateClass(TableGeneratorData data)
 		{
 			List<Configuration> configurations = GetConfigurations(data);
+
 			configurations.ForEach(_ => GenerateClass(data, _));
+			GenerateDBClass(data);
 
 			AssetDatabase.SaveAssets();
 			AssetDatabase.Refresh();
@@ -32,6 +34,11 @@ namespace Unitils
 		public static void GenerateData(TableGeneratorData data)
 		{
 			List<Configuration> configurations = GetConfigurations(data);
+
+			configurations.ForEach(_ => GenerateData(data, _));
+
+			AssetDatabase.SaveAssets();
+			AssetDatabase.Refresh();
 		}
 
 
@@ -90,6 +97,13 @@ namespace Unitils
 				if (!IsValidateVariableType(variableType)) return;
 			}
 
+			int primaryKeyIndex = keys.FindIndex(_ => _.ToLower().Contains("primary"));
+			if (primaryKeyIndex < 0) return;
+
+			string spaceName = configuration.folderName.Replace('/', '.');
+
+			#region Generate Class
+
 			string className = tableName;
 			if (!string.IsNullOrEmpty(configuration.separator)) {
 				char separator = configuration.separator[0];
@@ -119,9 +133,53 @@ namespace Unitils
 			}
 			while (classBody.EndsWith("\n")) classBody = classBody.TrimEnd('\n');
 
-			string classText = string.Format(CLASS_TEMPLATE, configuration.folderName.Replace('/', '.'), className, classBody);
+			string classText = string.Format(CLASS_TEMPLATE, spaceName, className, classBody);
 			File.WriteAllText(Path.Combine(outputFolderPath, $"{className}.cs"), classText);
+			#endregion
+
+			#region Generate Table Class
+
+			string tableClassName = $"{className}Table";
+			string inheritance = (configuration.isWritable ? "WritableTable" : "TableBase") + $"<{className}, {types[primaryKeyIndex]}>";
+
+			classBody = "";
+
+			classText = string.Format(TABLE_CLASS_TEMPLATE, spaceName, tableClassName, inheritance, classBody);
+			File.WriteAllText(Path.Combine(outputFolderPath, $"{tableClassName}.cs"), classText);
+			#endregion
 		}
+
+		private static void GenerateDBClass(TableGeneratorData data)
+		{
+		}
+
+
+		private static void GenerateData(TableGeneratorData data, Configuration configuration)
+		{
+			CSVReader csvReader = new CSVReader();
+			List<List<string>> csv = csvReader.ParseCSV(File.ReadAllText(configuration.filePath));
+
+			string tableName = csv[0][0];
+			List<string> columns = csv[1].Select(_ => _.ToLower()).ToList();
+
+			string jsonText = "";
+
+			for (int i = 5; i < csv.Count; i++) {
+				string record = "{";
+				for (int j = 0; j < columns.Count; j++) {
+					record += $"\"{columns[j]}\":\"{csv[i][j].Replace("\"", "\\\"").Replace("\n", "\\n")}\",";
+				}
+				record = record.TrimEnd(',') + "}";
+				jsonText += record;
+			}
+			jsonText = $"{{\"list\":[{jsonText}]}}";
+
+			string outputFolderPath = Path.Combine(Application.dataPath, data.DataOutputFolder, configuration.folderName);
+			if (!Directory.Exists(outputFolderPath)) Directory.CreateDirectory(outputFolderPath);
+
+			File.WriteAllText(Path.Combine(outputFolderPath, $"{tableName}.json"), jsonText);
+		}
+
 
 		private static bool IsValidateVariableType(string variableType)
 		{
@@ -148,6 +206,19 @@ namespace Unitils
 			"\tpublic partial class {1}\n" +
 			"\t{{\n" +
 			"{2}\n" +
+			"\t}}\n" +
+			"}}";
+
+		private const string TABLE_CLASS_TEMPLATE =
+			"using System;\n" +
+			"using System.Collections.Generic;\n" +
+			"using Unitils;\n" +
+			"\n" +
+			"namespace {0}\n" +
+			"{{\n" +
+			"\tpublic class {1} : {2}\n" +
+			"\t{{\n" +
+			"{3}\n" +
 			"\t}}\n" +
 			"}}";
 	}
