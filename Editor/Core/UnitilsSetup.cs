@@ -15,9 +15,9 @@ namespace Unitils
 			CreateFolder(rootFolder);
 
 			GenerateScriptableObjectData(
-				typeof(SystemData),
-				typeof(ButtonSoundData),
-				typeof(TableGeneratorData)
+				(typeof(SystemData), false),
+				(typeof(ButtonSoundData), false),
+				(typeof(TableGeneratorData), true)
 			);
 
 			GenerateTextureImportSettingsOverride();
@@ -26,13 +26,14 @@ namespace Unitils
 			AssetDatabase.Refresh();
 		}
 
-		private static void GenerateScriptableObjectData(params Type[] types)
+		private static void GenerateScriptableObjectData(params (Type type, bool isEditor)[] targets)
 		{
-			string folderPath = Path.Combine(rootFolder, "Resources/Data");
-			CreateFolder(folderPath);
+			for (int i = 0; i < targets.Length; i++) {
+				string folderName = targets[i].isEditor ? "Editor/Data" : "Resources/Data";
+				string folderPath = Path.Combine(rootFolder, folderName);
+				CreateFolder(folderPath);
 
-			for (int i = 0; i < types.Length; i++) {
-				Type type = types[i];
+				Type type = targets[i].type;
 				string filePath = Path.Combine(folderPath, $"{type.Name}.asset");
 				if (!type.IsSubclassOf(typeof(ScriptableObject)) || File.Exists(filePath)) continue;
 				ScriptableObjectToAsset.Create(EditorTools.ToAssetPath(filePath), type);
@@ -41,7 +42,7 @@ namespace Unitils
 
 		private static void GenerateTextureImportSettingsOverride()
 		{
-			string folderPath = Path.Combine(rootFolder, "Resources/Data/OverrideTextureImportSettings");
+			string folderPath = Path.Combine(rootFolder, "Editor/Data/OverrideTextureImportSettings");
 			CreateFolder(folderPath);
 
 			string filePath = Path.Combine(folderPath, "Configurations.asset");
