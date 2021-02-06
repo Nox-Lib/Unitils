@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using UnityEngine;
 using UnityEditor;
 
@@ -12,33 +13,30 @@ namespace Unitils
 		private static void Setup()
 		{
 			CreateFolder(rootFolder);
-			GenerateSystemData();
-			GenerateButtonSoundData();
+
+			GenerateScriptableObjectData(
+				typeof(SystemData),
+				typeof(ButtonSoundData),
+				typeof(TableGeneratorData)
+			);
+
 			GenerateTextureImportSettingsOverride();
 
 			AssetDatabase.SaveAssets();
 			AssetDatabase.Refresh();
 		}
 
-
-		private static void GenerateSystemData()
+		private static void GenerateScriptableObjectData(params Type[] types)
 		{
 			string folderPath = Path.Combine(rootFolder, "Resources/Data");
 			CreateFolder(folderPath);
 
-			string filePath = Path.Combine(folderPath, "SystemData.asset");
-			if (File.Exists(filePath)) return;
-			ScriptableObjectToAsset.Create<SystemData>(EditorTools.ToAssetPath(filePath));
-		}
-
-		private static void GenerateButtonSoundData()
-		{
-			string folderPath = Path.Combine(rootFolder, "Resources/Data");
-			CreateFolder(folderPath);
-
-			string filePath = Path.Combine(folderPath, "ButtonSoundData.asset");
-			if (File.Exists(filePath)) return;
-			ScriptableObjectToAsset.Create<ButtonSoundData>(EditorTools.ToAssetPath(filePath));
+			for (int i = 0; i < types.Length; i++) {
+				Type type = types[i];
+				string filePath = Path.Combine(folderPath, $"{type.Name}.asset");
+				if (!type.IsSubclassOf(typeof(ScriptableObject)) || File.Exists(filePath)) continue;
+				ScriptableObjectToAsset.Create(EditorTools.ToAssetPath(filePath), type);
+			}
 		}
 
 		private static void GenerateTextureImportSettingsOverride()
