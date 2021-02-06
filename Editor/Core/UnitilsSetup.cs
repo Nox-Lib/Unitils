@@ -58,8 +58,7 @@ namespace Unitils
 
 		private static void CreateFolder(string folderPath)
 		{
-			if (Directory.Exists(folderPath)) return;
-			Directory.CreateDirectory(folderPath);
+			if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
 		}
 	}
 }

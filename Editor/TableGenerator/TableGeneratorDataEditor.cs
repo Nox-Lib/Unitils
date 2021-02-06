@@ -11,29 +11,31 @@ namespace Unitils
 	[CustomEditor(typeof(TableGeneratorData))]
 	public class TableGeneratorDataEditor : Editor
 	{
-		private const string IS_TABLE_GENERATION_TARGET_FOLDERS = "IS_TABLE_GENERATION_TARGET_FOLDERS";
-
 		private bool isError;
 
 		public override void OnInspectorGUI()
 		{
 			this.serializedObject.Update();
 
+			TableGeneratorData data = this.target as TableGeneratorData;
+
 			this.isError = false;
 
 			this.DrawPathField("inputFolder");
-			this.DrawPathField("classGenerateFolder");
-			this.DrawPathField("dataGenerateFolder");
+			this.DrawPathField("classOutputFolder");
+			this.DrawPathField("dataOutputFolder");
+			this.serializedObject.ApplyModifiedProperties();
 
-			this.DrawWritableTableSettings();
-			this.DrawGenerateTargets();
+			this.DrawGenerateTargets(data);
 
 			EditorGUILayout.Space(10f);
 			EditorGUILayout.BeginHorizontal();
 			
-			if (GUILayout.Button("Class Generate")) {
+			if (GUILayout.Button("Generate Class")) {
+				if (!this.isError) TableGenerator.GenerateClass(data);
 			}
-			if (GUILayout.Button("Data Generate")) {
+			if (GUILayout.Button("Generate Data")) {
+				if (!this.isError) TableGenerator.GenerateData(data);
 			}
 			EditorGUILayout.EndHorizontal();
 
@@ -57,85 +59,81 @@ namespace Unitils
 			EditorGUILayout.EndHorizontal();
 		}
 
-		private void DrawWritableTableSettings()
+		private void DrawGenerateTargets(TableGeneratorData data)
 		{
-			EditorGUILayout.Space(5f);
-
-			SerializedProperty isWritableTableProperty = this.serializedObject.FindProperty("isWritableTable");
-			isWritableTableProperty.boolValue = EditorGUILayout.ToggleLeft("Is Writable Table", isWritableTableProperty.boolValue);
-
-			SerializedProperty writableTablePathMatchPatternProperty = this.serializedObject.FindProperty("writableTablePathMatchPattern");
-			if (isWritableTableProperty.boolValue) {
-				EditorGUI.indentLevel++;
-				EditorGUILayout.PropertyField(writableTablePathMatchPatternProperty, new GUIContent("Path Match Pattern"));
-				EditorGUI.indentLevel--;
-			}
-
-			if (!string.IsNullOrEmpty(writableTablePathMatchPatternProperty.stringValue)) {
-				try {
-					Regex regex = new Regex(writableTablePathMatchPatternProperty.stringValue);
-				}
-				catch (Exception e) {
-					string errorMessage = $"path match pattern error. {e.Message}";
-					EditorGUILayout.HelpBox(errorMessage, MessageType.Error, true);
-					this.isError = true;
-				}
-			}
-
-			this.serializedObject.ApplyModifiedProperties();
-		}
-
-		private void DrawGenerateTargets()
-		{
-			if (this.isError) return;
-
-			TableGeneratorData data = this.target as TableGeneratorData;
-
 			string inputFolder = Path.Combine(Application.dataPath, data.InputFolder);
 			if (!Directory.Exists(inputFolder)) return;
 
-			List<string> inputTargets = Directory.GetDirectories(inputFolder, "*", SearchOption.AllDirectories).ToList();
+			string[] targets = Directory.GetDirectories(inputFolder, "*", SearchOption.AllDirectories);
+			Array.Sort(targets);
 
-			if (inputTargets.Count <= 0) return;
+			if (targets.Length <= 0) return;
 
-			List<string> readOnlyTables = new List<string>();
-			List<string> writableTables = new List<string>();
-			string matchPattern = data.WritableTablePathMatchPattern;
-
-			foreach (string target in inputTargets) {
-				string folder = target.Replace(inputFolder, "").TrimStart('/');
-				if (data.IsWritableTable && !string.IsNullOrEmpty(matchPattern) && Regex.IsMatch(folder, matchPattern)) {
-					writableTables.Add(folder);
-				}
-				else {
-					readOnlyTables.Add(folder);
-				}
+			List<TableGeneratorData.FolderData> folders = new List<TableGeneratorData.FolderData>(data.Folders);
+			data.Folders.Clear();
+			for (int i = 0; i < targets.Length; i++) {
+				TableGeneratorData.FolderData folderData = folders.FirstOrDefault(_ => _.path == targets[i]);
+				if (folderData == null) folderData = new TableGeneratorData.FolderData { path = targets[i] };
+				data.Folders.Add(folderData);
 			}
+			folders = data.Folders;
+			if (targets.Length > folders.Count) {
+				folders.RemoveRange(targets.Length - 1, targets.Length - folders.Count);
+			}
+			this.serializedObject.Update();
 
-			EditorGUILayout.Space(10f);
+			EditorGUILayout.Space(5f);
 
-			bool isOpen = EditorPrefs.GetBool(IS_TABLE_GENERATION_TARGET_FOLDERS);
-			isOpen = EditorGUILayout.Foldout(isOpen, "Table Generation Target Folders");
-			EditorPrefs.SetBool(IS_TABLE_GENERATION_TARGET_FOLDERS, isOpen);
-
-			if (!isOpen) return;
-
+			EditorGUILayout.LabelField("Table Generation Targets");
 			EditorGUILayout.BeginVertical(GUI.skin.box);
 
-			if (readOnlyTables.Count > 0) {
-				EditorGUILayout.LabelField("Read Only Tables");
+			SerializedProperty foldersProperty = this.serializedObject.FindProperty("folders");
+
+			for (int i = 0; i < targets.Length; i++) {
+				SerializedProperty folderProperty = foldersProperty.GetArrayElementAtIndex(i);
+				string folder = targets[i].Replace(inputFolder, "").TrimStart('/');
+
+				SerializedProperty enabledProperty = folderProperty.FindPropertyRelative("enabled");
+				enabledProperty.boolValue = EditorGUILayout.ToggleLeft(folder, enabledProperty.boolValue);
+
+				folderProperty.FindPropertyRelative("path").stringValue = targets[i];
+				folderProperty.FindPropertyRelative("folderName").stringValue = folder;
+
+				if (!enabledProperty.boolValue) continue;
+
 				EditorGUILayout.BeginVertical(GUI.skin.box);
-				EditorGUI.indentLevel++;
-				readOnlyTables.ForEach(_ => EditorGUILayout.LabelField(_));
-				EditorGUI.indentLevel--;
-				EditorGUILayout.EndVertical();
-			}
-			if (writableTables.Count > 0) {
-				EditorGUILayout.LabelField("Writable Tables");
-				EditorGUILayout.BeginVertical(GUI.skin.box);
-				EditorGUI.indentLevel++;
-				writableTables.ForEach(_ => EditorGUILayout.LabelField(_));
-				EditorGUI.indentLevel--;
+
+				SerializedProperty isWritableTableProperty = folderProperty.FindPropertyRelative("isWritableTable");
+				isWritableTableProperty.boolValue = EditorGUILayout.Toggle("Is Writable Table", isWritableTableProperty.boolValue);
+
+				SerializedProperty separatorProperty = folderProperty.FindPropertyRelative("separator");
+				EditorGUILayout.PropertyField(separatorProperty);
+				if (separatorProperty.stringValue.Length > 1) {
+					separatorProperty.stringValue = separatorProperty.stringValue.Substring(0, 1);
+				}
+
+				SerializedProperty classNameEraserProperty = folderProperty.FindPropertyRelative("classNameEraser");
+				EditorGUILayout.PropertyField(classNameEraserProperty);
+				if (!string.IsNullOrEmpty(classNameEraserProperty.stringValue)) {
+					try {
+						Regex regex = new Regex(classNameEraserProperty.stringValue);
+					}
+					catch (Exception e) {
+						this.isError = true;
+						EditorGUILayout.HelpBox($"path match pattern error. {e.Message}", MessageType.Error, true);
+					}
+				}
+
+				SerializedProperty classNameFormatProperty = folderProperty.FindPropertyRelative("classNameFormat");
+				EditorGUILayout.PropertyField(classNameFormatProperty);
+				if (string.IsNullOrEmpty(classNameFormatProperty.stringValue)) {
+					classNameFormatProperty.stringValue = "*";
+				}
+				else if (classNameFormatProperty.stringValue.Count(_ => _ == '*') != 1) {
+					this.isError = true;
+					EditorGUILayout.HelpBox("only one '*' is required", MessageType.Error, true);
+				}
+
 				EditorGUILayout.EndVertical();
 			}
 

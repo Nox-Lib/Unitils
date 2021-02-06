@@ -64,6 +64,14 @@ namespace Unitils
 				string r = target.Substring(index + 1, target.Length - index - 1);
 				return l + char.ToUpper(target[index]) + r;
 			}
+
+			public static string ToLower(string target, int index)
+			{
+				if (index >= target.Length || char.IsLower(target[index])) return target;
+				string l = target.Substring(0, index);
+				string r = target.Substring(index + 1, target.Length - index - 1);
+				return l + char.ToLower(target[index]) + r;
+			}
 		}
 	}
 }

@@ -1,29 +1,42 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Unitils
 {
 	public class TableGeneratorData : ScriptableObject
 	{
+		[Serializable]
+		public class FolderData
+		{
+			public bool enabled = true;
+			public string path;
+			public string folderName;
+			public bool isWritableTable;
+			public string separator = "_";
+			public string classNameEraser = "_";
+			public string classNameFormat = "*";
+		}
+
 		[SerializeField] private string inputFolder;
 		public string InputFolder => this.inputFolder;
 
-		[SerializeField] private string classGenerateFolder;
-		public string ClassGenerateFolder => this.classGenerateFolder;
+		[SerializeField] private string classOutputFolder;
+		public string ClassOutputFolder => this.classOutputFolder;
 
-		[SerializeField] private string dataGenerateFolder;
-		public string DataGenerateFolder => this.dataGenerateFolder;
+		[SerializeField] private string dataOutputFolder;
+		public string DataOutputFolder => this.dataOutputFolder;
 
-		[SerializeField] private bool isWritableTable;
-		public bool IsWritableTable => this.isWritableTable;
+		[SerializeField] private List<FolderData> folders;
+		public List<FolderData> Folders => this.folders;
 
-		[SerializeField] private string writableTablePathMatchPattern;
-		public string WritableTablePathMatchPattern => this.writableTablePathMatchPattern;
 
 		public TableGeneratorData()
 		{
 			this.inputFolder = "../TableGenerator";
-			this.classGenerateFolder = "Tables";
-			this.dataGenerateFolder = "Tables";
+			this.classOutputFolder = "Tables";
+			this.dataOutputFolder = "Tables";
+			this.folders = new List<FolderData>();
 		}
 	}
 }
