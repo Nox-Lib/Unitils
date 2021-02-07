@@ -97,10 +97,16 @@ namespace Unitils
 			List<List<string>> csv = csvReader.ParseCSV(File.ReadAllText(configuration.filePath));
 
 			string tableName = csv[0][0];
-			List<string> columns = csv[1].Select(_ => _.ToLower()).ToList();
+			List<string> columns = csv[1];
 			List<string> keys = csv[2];
 			List<string> types = csv[3];
 			List<string> comments = csv[4];
+
+			columns = columns.Select(_ => _.ToLower()).ToList();
+
+			if (string.IsNullOrEmpty(tableName)) {
+				Debug.Log($"[TableGenerator] table name not found. ({configuration.filePath})");
+			}
 
 			foreach (string variableType in types) {
 				if (!IsValidateVariableType(variableType)) {
