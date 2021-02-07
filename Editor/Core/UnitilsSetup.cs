@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using UnityEngine;
 using UnityEditor;
 
@@ -12,38 +13,36 @@ namespace Unitils
 		private static void Setup()
 		{
 			CreateFolder(rootFolder);
-			GenerateSystemData();
-			GenerateButtonSoundData();
+
+			GenerateScriptableObjectData(
+				(typeof(SystemData), false),
+				(typeof(ButtonSoundData), false),
+				(typeof(TableGeneratorData), true)
+			);
+
 			GenerateTextureImportSettingsOverride();
 
 			AssetDatabase.SaveAssets();
 			AssetDatabase.Refresh();
 		}
 
-
-		private static void GenerateSystemData()
+		private static void GenerateScriptableObjectData(params (Type type, bool isEditor)[] targets)
 		{
-			string folderPath = Path.Combine(rootFolder, "Resources/Data");
-			CreateFolder(folderPath);
+			for (int i = 0; i < targets.Length; i++) {
+				string folderName = targets[i].isEditor ? "Editor/Data" : "Resources/Data";
+				string folderPath = Path.Combine(rootFolder, folderName);
+				CreateFolder(folderPath);
 
-			string filePath = Path.Combine(folderPath, "SystemData.asset");
-			if (File.Exists(filePath)) return;
-			ScriptableObjectToAsset.Create<SystemData>(EditorTools.ToAssetPath(filePath));
-		}
-
-		private static void GenerateButtonSoundData()
-		{
-			string folderPath = Path.Combine(rootFolder, "Resources/Data");
-			CreateFolder(folderPath);
-
-			string filePath = Path.Combine(folderPath, "ButtonSoundData.asset");
-			if (File.Exists(filePath)) return;
-			ScriptableObjectToAsset.Create<ButtonSoundData>(EditorTools.ToAssetPath(filePath));
+				Type type = targets[i].type;
+				string filePath = Path.Combine(folderPath, $"{type.Name}.asset");
+				if (!type.IsSubclassOf(typeof(ScriptableObject)) || File.Exists(filePath)) continue;
+				ScriptableObjectToAsset.Create(EditorTools.ToAssetPath(filePath), type);
+			}
 		}
 
 		private static void GenerateTextureImportSettingsOverride()
 		{
-			string folderPath = Path.Combine(rootFolder, "Resources/Data/OverrideTextureImportSettings");
+			string folderPath = Path.Combine(rootFolder, "Editor/Data/OverrideTextureImportSettings");
 			CreateFolder(folderPath);
 
 			string filePath = Path.Combine(folderPath, "Configurations.asset");
@@ -60,8 +59,7 @@ namespace Unitils
 
 		private static void CreateFolder(string folderPath)
 		{
-			if (Directory.Exists(folderPath)) return;
-			Directory.CreateDirectory(folderPath);
+			if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
 		}
 	}
 }

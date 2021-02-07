@@ -43,8 +43,11 @@ namespace Unitils
 
 		public static T Create<T>(string outputPath) where T : ScriptableObject
 		{
-			System.Type type = typeof(T);
+			return Create(outputPath, typeof(T)) as T;
+		}
 
+		public static ScriptableObject Create(string outputPath, System.Type type)
+		{
 			ScriptableObject obj = ScriptableObject.CreateInstance(type);
 			AssetDatabase.CreateAsset(obj, outputPath);
 			labels[2] = type.Name;
@@ -53,7 +56,7 @@ namespace Unitils
 			AssetDatabase.SetLabels(sobj, labels);
 			EditorUtility.SetDirty(sobj);
 
-			return sobj as T;
+			return sobj;
 		}
 	}
 }

@@ -286,8 +286,8 @@ namespace Unitils
 
 		private void ValidateProperties(TextureImporterType selectedTextureImporterType)
 		{
-            bool isUnfind = !Enum.IsDefined(typeof(TextureImporterShape), textureShape.Property.intValue);
-            isUnfind |= !this.textureShapeCaps[selectedTextureImporterType].HasFlag((TextureImporterShape)this.textureShape.Property.intValue);
+			bool isUnfind = !Enum.IsDefined(typeof(TextureImporterShape), this.textureShape.Property.intValue);
+			isUnfind = isUnfind || !this.textureShapeCaps[selectedTextureImporterType].HasFlag((TextureImporterShape)this.textureShape.Property.intValue);
 
 			if (isUnfind) {
 				Array enumValues = Enum.GetValues(typeof(TextureImporterShape));

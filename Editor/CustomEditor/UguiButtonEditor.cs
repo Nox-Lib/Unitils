@@ -43,11 +43,15 @@ namespace Unitils
 				if (uguiButton.DownType != UguiButton.TriggerDownType.DownOnce) {
 					EditorGUILayout.PropertyField(this.serializedObject.FindProperty("interval"));
 				}
+				if (uguiButton.DownType == UguiButton.TriggerDownType.DownLong) {
+					EditorGUILayout.PropertyField(this.serializedObject.FindProperty("canAlsoClick"));
+				}
 				if (uguiButton.DownType == UguiButton.TriggerDownType.DownKeepAcceleration) {
 					EditorGUILayout.PropertyField(this.serializedObject.FindProperty("accelerationTime"));
 					EditorGUILayout.PropertyField(this.serializedObject.FindProperty("acceleratedInterval"));
 				}
 				if (uguiButton.DownType == UguiButton.TriggerDownType.DownKeep || uguiButton.DownType == UguiButton.TriggerDownType.DownKeepAcceleration) {
+					EditorGUILayout.PropertyField(this.serializedObject.FindProperty("isDontInvokeAtFirst"), new GUIContent("Don't Invoke At First"));
 					EditorGUILayout.PropertyField(this.serializedObject.FindProperty("isPlaySoundOnEveryInvoke"), new GUIContent("Play Sound On Every Invoke"));
 				}
 			}
@@ -89,6 +93,9 @@ namespace Unitils
 			EditorGUILayout.BeginVertical();
 			GUILayout.Space(5f);
 			EditorGUILayout.PropertyField(this.serializedObject.FindProperty("onEvent"));
+			if (uguiButton.Trigger == Define.ButtonTrigger.Down && uguiButton.DownType == UguiButton.TriggerDownType.DownLong) {
+				EditorGUILayout.PropertyField(this.serializedObject.FindProperty("onLongPressedEvent"));
+			}
 			EditorGUILayout.EndVertical();
 
 			this.serializedObject.ApplyModifiedProperties();
