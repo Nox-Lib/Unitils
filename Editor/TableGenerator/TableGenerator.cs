@@ -119,7 +119,7 @@ namespace Unitils
 			if (primaryIndex < 0) {
 				Debug.Log($"[TableGenerator] table name: {tableName}, primary key not found.");
 			}
-			
+
 			string spaceName = configuration.folderName.Replace('/', '.');
 
 			#region Generate Class
@@ -200,8 +200,7 @@ namespace Unitils
 			}
 
 			List<(string type, string upperCamelName, string lowerCamelName)> secondaryProperties = secondaryIndices
-				.Select(_ =>
-				{
+				.Select(_ => {
 					string upperCamel = string.Concat(columns[_].Split('_').Select(word => Utils.Text.ToUpper(word, 0)));
 					return (types[_], upperCamel, Utils.Text.ToLower(upperCamel, 0));
 				})
