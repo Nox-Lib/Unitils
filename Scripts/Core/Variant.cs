@@ -11,10 +11,9 @@ namespace Unitils
 
 		public static Variant EMPTY => new Variant(null);
 
-		private object data;
-
-		private bool isList;
-		private bool isHash;
+		private readonly object data;
+		private readonly bool isList;
+		private readonly bool isHash;
 
 		public Variant this[object id] {
 			get {
@@ -152,10 +151,10 @@ namespace Unitils
 
 		private class VariantEnumerator : IEnumerator
 		{
-			private Variant root;
-			private object current;
+			private readonly Variant root;
+			private readonly List<string> keys;
 			private int cursor;
-			private List<string> keys;
+			private object current;
 
 			public VariantEnumerator(Variant root)
 			{
