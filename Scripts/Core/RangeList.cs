@@ -32,9 +32,10 @@ namespace Unitils
 		public RangeList(T[] ordered, int min, int max)
 		{
 			this.ordered = ordered;
+			this.hasValue = this.ordered != null && this.ordered.Length > 0;
+			if (!this.hasValue) return;
 			this.min = Mathf.Max(Mathf.Min(min, max), 0);
 			this.max = Mathf.Min(Mathf.Max(min, max), this.ordered.Length - 1);
-			this.hasValue = this.ordered != null && this.ordered.Length > 0;
 		}
 
 		public IEnumerator<T> GetEnumerator()

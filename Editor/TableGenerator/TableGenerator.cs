@@ -19,13 +19,21 @@ namespace Unitils
 			public string classNameFormat;
 		}
 
+		private class SecondaryInfo
+		{
+			public bool use;
+			public string type;
+			public string selector;
+			public string findMethod;
+		}
+
 
 		public static void GenerateClass(TableGeneratorData data)
 		{
 			List<Configuration> configurations = GetConfigurations(data);
+			if (configurations.Count <= 0) return;
 
 			configurations.ForEach(_ => GenerateClass(data, _));
-			GenerateDBClass(data);
 
 			AssetDatabase.SaveAssets();
 			AssetDatabase.Refresh();
@@ -34,6 +42,7 @@ namespace Unitils
 		public static void GenerateData(TableGeneratorData data)
 		{
 			List<Configuration> configurations = GetConfigurations(data);
+			if (configurations.Count <= 0) return;
 
 			configurations.ForEach(_ => GenerateData(data, _));
 
@@ -94,12 +103,17 @@ namespace Unitils
 			List<string> comments = csv[4];
 
 			foreach (string variableType in types) {
-				if (!IsValidateVariableType(variableType)) return;
+				if (!IsValidateVariableType(variableType)) {
+					Debug.Log($"[TableGenerator] table name: {tableName}, unsupported variable type. {variableType}");
+					return;
+				}
 			}
 
-			int primaryKeyIndex = keys.FindIndex(_ => _.ToLower().Contains("primary"));
-			if (primaryKeyIndex < 0) return;
-
+			int primaryIndex = keys.FindIndex(_ => _.ToLower().Contains("primary"));
+			if (primaryIndex < 0) {
+				Debug.Log($"[TableGenerator] table name: {tableName}, primary key not found.");
+			}
+			
 			string spaceName = configuration.folderName.Replace('/', '.');
 
 			#region Generate Class
@@ -118,18 +132,15 @@ namespace Unitils
 			string outputFolderPath = Path.Combine(Application.dataPath, data.ClassOutputFolder, configuration.folderName);
 			if (!Directory.Exists(outputFolderPath)) Directory.CreateDirectory(outputFolderPath);
 
-			string usePropertyTemplate = configuration.isWritable ? WRITABLE_PROPERTY_TEMPLATE : READONLY_PROPERTY_TEMPLATE;
+			string usePropertyFormat = configuration.isWritable ? WRITABLE_PROPERTY_TEMPLATE : READONLY_PROPERTY_TEMPLATE;
 
 			string classBody = "";
 			for (int i = 0; i < columns.Count; i++) {
 				string[] words = columns[i].Split('_');
 				string upperCamelName = string.Concat(words.Select(_ => Utils.Text.ToUpper(_, 0)));
 				string lowerCamelName = Utils.Text.ToLower(upperCamelName, 0);
-
-				classBody += usePropertyTemplate
-					.Replace("[variable_type]", types[i])
-					.Replace("[lower_camel_name]", lowerCamelName)
-					.Replace("[upper_camel_name]", upperCamelName);
+				string comment = comments[i].Replace("\n", "\n\t\t/// ");
+				classBody += string.Format(usePropertyFormat, types[i], lowerCamelName, upperCamelName, comment);
 			}
 			while (classBody.EndsWith("\n")) classBody = classBody.TrimEnd('\n');
 
@@ -139,18 +150,84 @@ namespace Unitils
 
 			#region Generate Table Class
 
-			string tableClassName = $"{className}Table";
-			string inheritance = (configuration.isWritable ? "WritableTable" : "TableBase") + $"<{className}, {types[primaryKeyIndex]}>";
+			string primaryType = types[primaryIndex];
+			string primaryUpperCamelName = string.Concat(columns[primaryIndex].Split('_').Select(_ => Utils.Text.ToUpper(_, 0)));
+			string primaryLowerCamelName = Utils.Text.ToLower(primaryUpperCamelName, 0);
 
-			classBody = "";
+			string tableClassName = $"{className}Table";
+			string inheritance = (configuration.isWritable ? "WritableTable" : "TableBase") + $"<{className}, {primaryType}>";
+
+			SecondaryInfo secondaryInfo = GetSecondaryInfo(columns, keys, types);
+
+			classBody = string.Format(PRIMARY_PROPERTY_TEMPLATE, className, primaryType, primaryUpperCamelName);
+
+			if (secondaryInfo.use) {
+				classBody += string.Format(SECONDARY_PROPERTY_TEMPLATE, className, secondaryInfo.type, className);
+				classBody += string.Format(CONSTRUCTOR_TEMPLATE_FOR_SECONDARY, tableClassName, className, secondaryInfo.selector, secondaryInfo.type);
+				classBody += string.Format(FIND_BY_METHOD_TEMPLATE, className, primaryUpperCamelName, primaryType, primaryLowerCamelName);
+				classBody += string.Format(FIND_BY_SECONDARY_METHOD_TEMPLATE, className, secondaryInfo.findMethod, secondaryInfo.type);
+			}
+			else {
+				classBody += string.Format(CONSTRUCTOR_TEMPLATE, tableClassName, className);
+				classBody += string.Format(FIND_BY_METHOD_TEMPLATE, className, primaryUpperCamelName, primaryType, primaryLowerCamelName);
+			}
+
+			while (classBody.EndsWith("\n")) classBody = classBody.TrimEnd('\n');
 
 			classText = string.Format(TABLE_CLASS_TEMPLATE, spaceName, tableClassName, inheritance, classBody);
 			File.WriteAllText(Path.Combine(outputFolderPath, $"{tableClassName}.cs"), classText);
 			#endregion
 		}
 
-		private static void GenerateDBClass(TableGeneratorData data)
+
+		private static bool IsValidateVariableType(string variableType)
 		{
+			if (string.IsNullOrEmpty(variableType)) return false;
+			return Regex.IsMatch("int|long|float|string", variableType);
+		}
+
+		private static SecondaryInfo GetSecondaryInfo(List<string> columns, List<string> keys, List<string> types)
+		{
+			List<int> secondaryIndices = new List<int>();
+			for (int i = 0; i < keys.Count; i++) {
+				if (keys[i].ToLower().Contains("secondary")) secondaryIndices.Add(i);
+			}
+
+			List<(string type, string upperCamelName, string lowerCamelName)> secondaryProperties = secondaryIndices
+				.Select(_ =>
+				{
+					string upperCamel = string.Concat(columns[_].Split('_').Select(word => Utils.Text.ToUpper(word, 0)));
+					return (types[_], upperCamel, Utils.Text.ToLower(upperCamel, 0));
+				})
+				.ToList();
+
+			bool use = secondaryProperties.Count > 0;
+			string type = "";
+			string selector = "";
+			string findMethod = "";
+
+			if (use) {
+				if (secondaryProperties.Count == 1) {
+					type = secondaryProperties[0].type;
+					selector = $"_.{secondaryProperties[0].upperCamelName}";
+					findMethod = secondaryProperties[0].upperCamelName;
+				}
+				else {
+					type = "(";
+					selector = "(";
+
+					for (int i = 0; i < secondaryProperties.Count; i++) {
+						type += $"{secondaryProperties[i].type} {secondaryProperties[i].lowerCamelName}, ";
+						selector += $"_.{secondaryProperties[i].upperCamelName}, ";
+						findMethod += $"{secondaryProperties[i].upperCamelName}And";
+					}
+					type = type.Substring(0, type.Length - 2) + ")";
+					selector = selector.Substring(0, selector.Length - 2) + ")";
+					findMethod = findMethod.Substring(0, findMethod.Length - 3);
+				}
+			}
+
+			return new SecondaryInfo { use = use, type = type, selector = selector, findMethod = findMethod };
 		}
 
 
@@ -162,6 +239,11 @@ namespace Unitils
 			string tableName = csv[0][0];
 			List<string> columns = csv[1].Select(_ => _.ToLower()).ToList();
 
+			for (int i = 0; i < columns.Count; i++) {
+				columns[i] = string.Concat(columns[i].Split('_').Select(word => Utils.Text.ToUpper(word, 0)));
+				columns[i] = Utils.Text.ToLower(columns[i], 0);
+			}
+
 			string jsonText = "";
 
 			for (int i = 5; i < csv.Count; i++) {
@@ -169,10 +251,10 @@ namespace Unitils
 				for (int j = 0; j < columns.Count; j++) {
 					record += $"\"{columns[j]}\":\"{csv[i][j].Replace("\"", "\\\"").Replace("\n", "\\n")}\",";
 				}
-				record = record.TrimEnd(',') + "}";
+				record = record.TrimEnd(',') + "},";
 				jsonText += record;
 			}
-			jsonText = $"{{\"list\":[{jsonText}]}}";
+			jsonText = $"{{\"list\":[{jsonText.TrimEnd(',')}]}}";
 
 			string outputFolderPath = Path.Combine(Application.dataPath, data.DataOutputFolder, configuration.folderName);
 			if (!Directory.Exists(outputFolderPath)) Directory.CreateDirectory(outputFolderPath);
@@ -181,20 +263,6 @@ namespace Unitils
 		}
 
 
-		private static bool IsValidateVariableType(string variableType)
-		{
-			if (string.IsNullOrEmpty(variableType)) return false;
-			return Regex.IsMatch("int|long|float|string", variableType);
-		}
-
-
-		private const string READONLY_PROPERTY_TEMPLATE =
-			"\t\t[SerializeField] private [variable_type] [lower_camel_name];\n" +
-			"\t\tpublic [variable_type] [upper_camel_name] => this.[lower_camel_name];\n\n";
-
-		private const string WRITABLE_PROPERTY_TEMPLATE =
-			"\t\t[SerializeField] private [variable_type] [lower_camel_name];\n" +
-			"\t\tpublic [variable_type] [upper_camel_name] { get { return this.[lower_camel_name]; } set { this.[lower_camel_name] = value; } }\n\n";
 
 		private const string CLASS_TEMPLATE =
 			"using System;\n" +
@@ -209,6 +277,21 @@ namespace Unitils
 			"\t}}\n" +
 			"}}";
 
+		private const string READONLY_PROPERTY_TEMPLATE =
+			"\t\t/// <summary>\n" +
+			"\t\t/// {3}\n" +
+			"\t\t/// </summary>\n" +
+			"\t\t[SerializeField] private {0} {1};\n" +
+			"\t\tpublic {0} {2} => this.{1};\n\n";
+
+		private const string WRITABLE_PROPERTY_TEMPLATE =
+			"\t\t/// <summary>\n" +
+			"\t\t/// {3}\n" +
+			"\t\t/// </summary>\n" +
+			"\t\t[SerializeField] private {0} {1};\n" +
+			"\t\tpublic {0} {2} {{ get {{ return this.{1}; }} set {{ this.{1} = value; }} }}\n\n";
+
+
 		private const string TABLE_CLASS_TEMPLATE =
 			"using System;\n" +
 			"using System.Collections.Generic;\n" +
@@ -221,5 +304,34 @@ namespace Unitils
 			"{3}\n" +
 			"\t}}\n" +
 			"}}";
+
+		private const string PRIMARY_PROPERTY_TEMPLATE =
+			"\t\tprotected override Func<{0}, {1}> PrimaryKeySelector => _ => _.{2};\n\n";
+
+		private const string SECONDARY_PROPERTY_TEMPLATE =
+			"\t\tprivate readonly Func<{0}, {1}> secondaryIndexSelector;\n" +
+			"\t\tprivate readonly {2}[] secondaryIndex;\n\n";
+
+		private const string CONSTRUCTOR_TEMPLATE =
+			"\t\tpublic {0}({1}[] source) : base(source) {{}}\n\n";
+
+		private const string CONSTRUCTOR_TEMPLATE_FOR_SECONDARY =
+			"\t\tpublic {0}({1}[] source) : base(source)\n" +
+			"\t\t{{\n" +
+			"\t\t\tthis.secondaryIndexSelector = _ => {2};\n" +
+			"\t\t\tthis.secondaryIndex = this.CloneAndSortBy(this.secondaryIndexSelector, Comparer<{3}>.Default);\n" +
+			"\t\t}}\n\n";
+
+		private const string FIND_BY_METHOD_TEMPLATE =
+			"\t\tpublic {0} FindBy{1}({2} {3})\n" +
+			"\t\t{{\n" +
+			"\t\t\treturn this.FindBy(this.PrimaryKeySelector, Comparer<{2}>.Default, {3});\n" +
+			"\t\t}}\n\n";
+
+		private const string FIND_BY_SECONDARY_METHOD_TEMPLATE =
+			"\t\tpublic RangeList<{0}> FindBy{1}({2} key)\n" +
+			"\t\t{{\n" +
+			"\t\t\treturn this.FindMany(this.secondaryIndex, this.secondaryIndexSelector, Comparer<{2}>.Default, key);\n" +
+			"\t\t}}\n\n";
 	}
 }

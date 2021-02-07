@@ -93,8 +93,11 @@ namespace Unitils
 				SerializedProperty folderProperty = foldersProperty.GetArrayElementAtIndex(i);
 				string folder = targets[i].Replace(inputFolder, "").TrimStart('/');
 
+				string[] files = Directory.GetFiles(targets[i], "*.csv");
+				string folderLabel = $"{folder} ({files.Length} files)";
+
 				SerializedProperty enabledProperty = folderProperty.FindPropertyRelative("enabled");
-				enabledProperty.boolValue = EditorGUILayout.ToggleLeft(folder, enabledProperty.boolValue);
+				enabledProperty.boolValue = EditorGUILayout.ToggleLeft(folderLabel, enabledProperty.boolValue);
 
 				folderProperty.FindPropertyRelative("path").stringValue = targets[i];
 				folderProperty.FindPropertyRelative("folderName").stringValue = folder;
