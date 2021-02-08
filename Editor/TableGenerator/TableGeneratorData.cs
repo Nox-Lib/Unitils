@@ -27,6 +27,18 @@ namespace Unitils
 		[SerializeField] private string dataOutputFolder;
 		public string DataOutputFolder => this.dataOutputFolder;
 
+		[SerializeField] private bool isDataFileNameToMD5;
+		public bool IsDataFileNameToMD5 => this.isDataFileNameToMD5;
+
+		[SerializeField] private Define.EncryptionType encryptionType;
+		public Define.EncryptionType EncryptionType => this.encryptionType;
+
+		[SerializeField] private string encryptOption1;
+		public string EncryptOption1 => this.encryptOption1;
+
+		[SerializeField] private string encryptOption2;
+		public string EncryptOption2 => this.encryptOption2;
+
 		[SerializeField] private List<FolderData> folders;
 		public List<FolderData> Folders => this.folders;
 

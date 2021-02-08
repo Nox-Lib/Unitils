@@ -14,6 +14,12 @@
 			Expand
 		}
 
+		public enum EncryptionType
+		{
+			None = 0,
+			AES
+		}
+
 		public enum ButtonTrigger
 		{
 			None = 0,
