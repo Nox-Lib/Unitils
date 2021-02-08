@@ -13,7 +13,7 @@ namespace Unitils
 			public string path;
 			public string folderName;
 			public bool isWritableTable;
-			public string separator = "_";
+			public string classNameSeparator = "_";
 			public string classNameEraser = "_";
 			public string classNameFormat = "*";
 		}

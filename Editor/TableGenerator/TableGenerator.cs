@@ -14,7 +14,7 @@ namespace Unitils
 			public string filePath;
 			public string folderName;
 			public bool isWritable;
-			public string separator;
+			public string classNameSeparator;
 			public string classNameEraser;
 			public string classNameFormat;
 		}
@@ -89,7 +89,7 @@ namespace Unitils
 						filePath = filePath,
 						folderName = folderData.folderName,
 						isWritable = folderData.isWritableTable,
-						separator = folderData.separator,
+						classNameSeparator = folderData.classNameSeparator,
 						classNameEraser = folderData.classNameEraser,
 						classNameFormat = folderData.classNameFormat
 					});
@@ -135,8 +135,8 @@ namespace Unitils
 			#region Generate Class
 
 			string className = tableName;
-			if (!string.IsNullOrEmpty(configuration.separator)) {
-				char separator = configuration.separator[0];
+			if (!string.IsNullOrEmpty(configuration.classNameSeparator)) {
+				char separator = configuration.classNameSeparator[0];
 				string[] words = className.Split(separator);
 				className = string.Join(separator.ToString(), words.Select(_ => Utils.Text.ToUpper(_, 0)));
 			}

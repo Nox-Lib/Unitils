@@ -142,7 +142,7 @@ namespace Unitils
 				SerializedProperty isWritableTableProperty = folderProperty.FindPropertyRelative("isWritableTable");
 				isWritableTableProperty.boolValue = EditorGUILayout.Toggle("Is Writable Table", isWritableTableProperty.boolValue);
 
-				SerializedProperty separatorProperty = folderProperty.FindPropertyRelative("separator");
+				SerializedProperty separatorProperty = folderProperty.FindPropertyRelative("classNameSeparator");
 				EditorGUILayout.PropertyField(separatorProperty);
 				if (separatorProperty.stringValue.Length > 1) {
 					separatorProperty.stringValue = separatorProperty.stringValue.Substring(0, 1);
