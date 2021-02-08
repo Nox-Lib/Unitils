@@ -297,10 +297,11 @@ namespace Unitils
 			}
 			jsonText = $"{{\"list\":[{jsonText.TrimEnd(',')}]}}";
 
-			string outputFolderPath = Path.Combine(Application.dataPath, data.DataOutputFolder, configuration.folderName);
+			string outputFolderPath = Path.Combine(Application.dataPath, data.DataOutputFolder);
 			if (!Directory.Exists(outputFolderPath)) Directory.CreateDirectory(outputFolderPath);
 
-			File.WriteAllText(Path.Combine(outputFolderPath, $"{tableName}.json"), jsonText);
+			string md5FileName = Utils.Security.GetMD5($"{Path.Combine(configuration.folderName, tableName)}");
+			File.WriteAllText(Path.Combine(outputFolderPath, md5FileName), jsonText);
 		}
 
 

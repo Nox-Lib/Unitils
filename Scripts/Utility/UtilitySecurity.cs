@@ -8,7 +8,12 @@ namespace Unitils
 	{
 		public static class Security
 		{
-			public static string ConvartToMD5Key(byte[] target)
+			public static string GetMD5(string target)
+			{
+				return GetMD5(Encoding.UTF8.GetBytes(target));
+			}
+
+			public static string GetMD5(byte[] target)
 			{
 				if (target == null) return string.Empty;
 
@@ -24,10 +29,10 @@ namespace Unitils
 				return stringBuilder.ToString();
 			}
 
-			public static bool IsMatchMD5Key(string md5Key1, string md5Key2)
+			public static bool IsMatchMD5(string a, string b)
 			{
 				StringComparer stringComparer = StringComparer.OrdinalIgnoreCase;
-				return stringComparer.Compare(md5Key1, md5Key2) == 0;
+				return stringComparer.Compare(a, b) == 0;
 			}
 		}
 	}
