@@ -90,10 +90,10 @@ namespace Unitils
 
 			if (targets.Length <= 0) return;
 
-			bool isReprocess = targets.Length != data.Folders.Count;
-			if (!isReprocess) {
-				for (int i = 0; i < targets.Length && !isReprocess; i++) {
-					isReprocess = targets[i] != data.Folders[i].path;
+			bool dontLayout = targets.Length != data.Folders.Count;
+			if (!dontLayout) {
+				for (int i = 0; i < targets.Length && !dontLayout; i++) {
+					dontLayout = targets[i] != data.Folders[i].path;
 				}
 			}
 
@@ -109,10 +109,10 @@ namespace Unitils
 				if (targets.Length > folders.Count) {
 					folders.RemoveRange(targets.Length - 1, targets.Length - folders.Count);
 				}
-				if (isReprocess) return;
+				if (dontLayout) return;
 			}
 			else {
-				if (isReprocess) return;
+				if (dontLayout) return;
 			}
 
 			EditorGUILayout.Space(5f);
