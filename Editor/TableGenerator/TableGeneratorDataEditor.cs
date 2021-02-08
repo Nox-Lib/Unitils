@@ -73,8 +73,8 @@ namespace Unitils
 
 			EditorGUILayout.PropertyField(this.serializedObject.FindProperty("encryptionType"));
 			if (data.EncryptionType == Define.EncryptionType.AES) {
-				EditorGUILayout.PropertyField(this.serializedObject.FindProperty("encryptOption1"), new GUIContent("AES IV"));
-				EditorGUILayout.PropertyField(this.serializedObject.FindProperty("encryptOption2"), new GUIContent("AES Key"));
+				EditorGUILayout.PropertyField(this.serializedObject.FindProperty("encryptionAesIv"), new GUIContent("AES IV"));
+				EditorGUILayout.PropertyField(this.serializedObject.FindProperty("encryptionAesKey"), new GUIContent("AES Key"));
 			}
 
 			EditorGUILayout.EndVertical();

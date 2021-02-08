@@ -8,6 +8,34 @@ namespace Unitils
 	{
 		public static class Security
 		{
+			private readonly static Random random = new Random();
+
+			public static string GeneratePassword(int length, bool useNumber = true, bool useUpper = true, bool useLower = true, bool useSymbol = true)
+			{
+				if (length <= 0) return "";
+
+				const string NUMBERS = "0123456789";
+				const string UPPER_ALPHABETS = "abcdefghijklmnopqrstuvwxyz";
+				const string LOWER_ALPHABETS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+				const string SYMBOLS = "!@#$%&*()_+-=|:;<>?";
+
+				string source = "";
+				if (useNumber) source += NUMBERS;
+				if (useUpper) source += UPPER_ALPHABETS;
+				if (useLower) source += LOWER_ALPHABETS;
+				if (useSymbol) source += SYMBOLS;
+
+				if (source.Length <= 0) return "";
+
+				StringBuilder builder = new StringBuilder(length);
+				for (int i = 0; i < length; i++) {
+					builder.Append(source[random.Next(source.Length)]);
+				}
+
+				return builder.ToString();
+			}
+
+
 			public static string GetMD5(string target)
 			{
 				return GetMD5(Encoding.UTF8.GetBytes(target));
