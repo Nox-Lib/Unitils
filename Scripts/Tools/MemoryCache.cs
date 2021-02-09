@@ -2,25 +2,25 @@
 
 namespace Unitils
 {
-	public class MemoryCache<T> where T : class
+	public class MemoryCache
 	{
-		private readonly Dictionary<string, T> cache;
+		private readonly Dictionary<string, object> cache;
 
 		public MemoryCache()
 		{
-			this.cache = new Dictionary<string, T>();
+			this.cache = new Dictionary<string, object>();
 		}
 
-		public T Get(object key)
+		public T Get<T>(object key)
 		{
 			string k = key.ToString();
 			if (string.IsNullOrEmpty(k) || !this.cache.ContainsKey(k)) {
-				return null;
+				return default;
 			}
-			return this.cache[k];
+			return (T)this.cache[k];
 		}
 
-		public bool Set(object key, T item)
+		public bool Set(object key, object item)
 		{
 			string k = key.ToString();
 			if (string.IsNullOrEmpty(k) || item == null) {
