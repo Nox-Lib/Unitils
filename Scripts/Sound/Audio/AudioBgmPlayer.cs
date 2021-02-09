@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace Unitils
 {
@@ -12,7 +11,7 @@ namespace Unitils
 		{
 			if (instance == null) {
 				instance = new GameObject("AudioBgmPlayer", typeof(AudioBgmPlayer)).GetComponent<AudioBgmPlayer>();
-				SceneManager.MoveGameObjectToScene(instance.gameObject, SceneManager.GetSceneByName(Define.SceneType.Unitils.Name));
+				DontDestroyOnLoad(instance.gameObject);
 				instance.audioSources = new AudioSourceBgm[2];
 			}
 			ServiceLocator.Instance.Register<ISoundBgmProvider>(instance);
