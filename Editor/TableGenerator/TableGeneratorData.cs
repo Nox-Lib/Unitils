@@ -33,11 +33,11 @@ namespace Unitils
 		[SerializeField] private Define.EncryptionType encryptionType;
 		public Define.EncryptionType EncryptionType => this.encryptionType;
 
-		[SerializeField] private string encryptionAesIv;
-		public string EncryptionAesIv => this.encryptionAesIv;
+		[SerializeField] private string encryptAesKey;
+		public string EncryptAesKey => this.encryptAesKey;
 
-		[SerializeField] private string encryptionAesKey;
-		public string EncryptionAesKey => this.encryptionAesKey;
+		[SerializeField] private string encryptAesIv;
+		public string EncryptAesIv => this.encryptAesIv;
 
 		[SerializeField] private List<FolderData> folders;
 		public List<FolderData> Folders => this.folders;
@@ -48,8 +48,8 @@ namespace Unitils
 			this.inputFolder = "../TableGenerator";
 			this.classOutputFolder = "Tables";
 			this.dataOutputFolder = "StreamingAssets/Tables";
-			this.encryptionAesIv = Utils.Security.GeneratePassword(16);
-			this.encryptionAesKey = Utils.Security.GeneratePassword(16);
+			this.encryptAesKey = Utils.Security.GeneratePassword(16);
+			this.encryptAesIv = Utils.Security.GeneratePassword(16);
 			this.folders = new List<FolderData>();
 		}
 	}

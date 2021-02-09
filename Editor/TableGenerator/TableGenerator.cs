@@ -297,14 +297,30 @@ namespace Unitils
 			}
 			jsonText = $"{{\"list\":[{jsonText.TrimEnd(',')}]}}";
 
-			string outputFolderPath = Path.Combine(Application.dataPath, data.DataOutputFolder, configuration.folderName);
+			string outputFolderPath = ""; Path.Combine(Application.dataPath, data.DataOutputFolder, configuration.folderName);
+			string fileName = "";
+
+			if (data.IsDataFileNameToMD5) {
+				outputFolderPath = Path.Combine(Application.dataPath, data.DataOutputFolder);
+				fileName = Utils.Security.GetMD5(Path.Combine(configuration.folderName, $"{tableName}.json"));
+			}
+			else {
+				outputFolderPath = Path.Combine(Application.dataPath, data.DataOutputFolder, configuration.folderName);
+				fileName = Path.Combine(configuration.folderName, $"{tableName}.json");
+			}
+
 			if (!Directory.Exists(outputFolderPath)) Directory.CreateDirectory(outputFolderPath);
 
-			string fileName = data.IsDataFileNameToMD5
-				? Utils.Security.GetMD5(Path.Combine(configuration.folderName, $"{tableName}.json"))
-				: Path.Combine(configuration.folderName, $"{tableName}.json");
+			string outputFilePath = Path.Combine(Application.dataPath, data.DataOutputFolder, fileName);
 
-			File.WriteAllText(Path.Combine(Application.dataPath, data.DataOutputFolder, fileName), jsonText);
+			if (data.EncryptionType == Define.EncryptionType.None) {
+				File.WriteAllText(outputFilePath, jsonText);
+				return;
+			}
+			if (data.EncryptionType == Define.EncryptionType.AES) {
+				byte[] bytes = Utils.Security.EncryptAES(jsonText, data.EncryptAesKey, data.EncryptAesIv);
+				File.WriteAllBytes(outputFilePath, bytes);
+			}
 		}
 
 

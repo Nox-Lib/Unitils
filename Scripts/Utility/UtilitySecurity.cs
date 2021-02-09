@@ -62,6 +62,33 @@ namespace Unitils
 				StringComparer stringComparer = StringComparer.OrdinalIgnoreCase;
 				return stringComparer.Compare(a, b) == 0;
 			}
+
+
+			public static byte[] EncryptAES(string text, string key, string iv)
+			{
+				AesCryptoServiceProvider aesCryptoService = new AesCryptoServiceProvider
+				{
+					Key = Encoding.UTF8.GetBytes(key),
+					IV = Encoding.UTF8.GetBytes(iv)
+				};
+				ICryptoTransform encryptor = aesCryptoService.CreateEncryptor();
+				byte[] bytes = Encoding.Unicode.GetBytes(text);
+
+				return encryptor.TransformFinalBlock(bytes, 0, bytes.Length);
+			}
+
+			public static string DecryptAES(byte[] cipherText, string key, string iv)
+			{
+				AesCryptoServiceProvider aesCryptoService = new AesCryptoServiceProvider
+				{
+					Key = Encoding.UTF8.GetBytes(key),
+					IV = Encoding.UTF8.GetBytes(iv)
+				};
+				ICryptoTransform decryptor = aesCryptoService.CreateDecryptor();
+				byte[] bytes = decryptor.TransformFinalBlock(cipherText, 0, cipherText.Length);
+
+				return Encoding.Unicode.GetString(bytes);
+			}
 		}
 	}
 }
