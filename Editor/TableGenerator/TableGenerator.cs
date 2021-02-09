@@ -14,9 +14,16 @@ namespace Unitils
 			public string filePath;
 			public string folderName;
 			public bool isWritable;
-			public string separator;
+			public string classNameSeparator;
 			public string classNameEraser;
 			public string classNameFormat;
+		}
+
+		private class DBConfiguration
+		{
+			public string spaceName;
+			public string outputPath;
+			public List<string> tables = new List<string>();
 		}
 
 		private class SecondaryInfo
@@ -33,7 +40,10 @@ namespace Unitils
 			List<Configuration> configurations = GetConfigurations(data);
 			if (configurations.Count <= 0) return;
 
-			configurations.ForEach(_ => GenerateClass(data, _));
+			List<DBConfiguration> dBConfigurations = new List<DBConfiguration>();
+			configurations.ForEach(_ => GenerateClass(data, _, ref dBConfigurations));
+
+			GenerateDB(dBConfigurations);
 
 			AssetDatabase.SaveAssets();
 			AssetDatabase.Refresh();
@@ -79,7 +89,7 @@ namespace Unitils
 						filePath = filePath,
 						folderName = folderData.folderName,
 						isWritable = folderData.isWritableTable,
-						separator = folderData.separator,
+						classNameSeparator = folderData.classNameSeparator,
 						classNameEraser = folderData.classNameEraser,
 						classNameFormat = folderData.classNameFormat
 					});
@@ -90,7 +100,7 @@ namespace Unitils
 		}
 
 
-		private static void GenerateClass(TableGeneratorData data, Configuration configuration)
+		private static void GenerateClass(TableGeneratorData data, Configuration configuration, ref List<DBConfiguration> dbConfigurations)
 		{
 			if (!File.Exists(configuration.filePath)) return;
 			CSVReader csvReader = new CSVReader();
@@ -120,13 +130,13 @@ namespace Unitils
 				Debug.Log($"[TableGenerator] table name: {tableName}, primary key not found.");
 			}
 
-			string spaceName = configuration.folderName.Replace('/', '.');
+			string spaceName = configuration.folderName.Replace("/", ".");
 
 			#region Generate Class
 
 			string className = tableName;
-			if (!string.IsNullOrEmpty(configuration.separator)) {
-				char separator = configuration.separator[0];
+			if (!string.IsNullOrEmpty(configuration.classNameSeparator)) {
+				char separator = configuration.classNameSeparator[0];
 				string[] words = className.Split(separator);
 				className = string.Join(separator.ToString(), words.Select(_ => Utils.Text.ToUpper(_, 0)));
 			}
@@ -183,8 +193,17 @@ namespace Unitils
 			classText = string.Format(TABLE_CLASS_TEMPLATE, spaceName, tableClassName, inheritance, classBody);
 			File.WriteAllText(Path.Combine(outputFolderPath, $"{tableClassName}.cs"), classText);
 			#endregion
-		}
 
+			DBConfiguration dbConfiguration = dbConfigurations.FirstOrDefault(_ => _.spaceName == spaceName);
+			if (dbConfiguration == null) {
+				dbConfiguration = new DBConfiguration { spaceName = spaceName, outputPath = outputFolderPath };
+				dbConfiguration.tables.Add(tableClassName);
+				dbConfigurations.Add(dbConfiguration);
+			}
+			else {
+				dbConfiguration.tables.Add(tableClassName);
+			}
+		}
 
 		private static bool IsValidateVariableType(string variableType)
 		{
@@ -236,6 +255,23 @@ namespace Unitils
 		}
 
 
+		private static void GenerateDB(List<DBConfiguration> dbConfigurations)
+		{
+			foreach (DBConfiguration dbConfiguration in dbConfigurations) {
+				string spaceName = dbConfiguration.spaceName;
+				string dbClassName = $"{spaceName.Replace(".", "")}DB";
+				string properties = "";
+
+				foreach (string table in dbConfiguration.tables) {
+					properties += string.Format(DB_CLASS_PROPERTY_TEMPLATE, table);
+				}
+
+				string classText = string.Format(DB_CLASS_TEMPLATE, spaceName, dbClassName, properties);
+				File.WriteAllText(Path.Combine(dbConfiguration.outputPath, $"{dbClassName}.cs"), classText);
+			}
+		}
+
+
 		private static void GenerateData(TableGeneratorData data, Configuration configuration)
 		{
 			CSVReader csvReader = new CSVReader();
@@ -261,10 +297,30 @@ namespace Unitils
 			}
 			jsonText = $"{{\"list\":[{jsonText.TrimEnd(',')}]}}";
 
-			string outputFolderPath = Path.Combine(Application.dataPath, data.DataOutputFolder, configuration.folderName);
+			string outputFolderPath = ""; Path.Combine(Application.dataPath, data.DataOutputFolder, configuration.folderName);
+			string fileName = "";
+
+			if (data.IsDataFileNameToMD5) {
+				outputFolderPath = Path.Combine(Application.dataPath, data.DataOutputFolder);
+				fileName = Utils.Security.GetMD5(Path.Combine(configuration.folderName, $"{tableName}.json"));
+			}
+			else {
+				outputFolderPath = Path.Combine(Application.dataPath, data.DataOutputFolder, configuration.folderName);
+				fileName = Path.Combine(configuration.folderName, $"{tableName}.json");
+			}
+
 			if (!Directory.Exists(outputFolderPath)) Directory.CreateDirectory(outputFolderPath);
 
-			File.WriteAllText(Path.Combine(outputFolderPath, $"{tableName}.json"), jsonText);
+			string outputFilePath = Path.Combine(Application.dataPath, data.DataOutputFolder, fileName);
+
+			if (data.EncryptionType == Define.EncryptionType.None) {
+				File.WriteAllText(outputFilePath, jsonText);
+				return;
+			}
+			if (data.EncryptionType == Define.EncryptionType.AES) {
+				byte[] bytes = Utils.Security.EncryptAES(jsonText, data.EncryptAesKey, data.EncryptAesIv);
+				File.WriteAllBytes(outputFilePath, bytes);
+			}
 		}
 
 
@@ -338,5 +394,20 @@ namespace Unitils
 			"\t\t{{\n" +
 			"\t\t\treturn this.FindMany(this.secondaryIndex, this.secondaryIndexSelector, Comparer<{2}>.Default, key);\n" +
 			"\t\t}}\n\n";
+
+
+		private const string DB_CLASS_TEMPLATE =
+			"namespace {0}\n" +
+			"{{\n" +
+			"\tpublic partial class {1}\n" +
+			"\t{{\n" +
+			"\t\tprivate static {1} instance = null;\n" +
+			"\t\tpublic static {1} Instance => instance ??= new {1}();\n\n" +
+			"{2}" +
+			"\t}}\n" +
+			"}}";
+
+		private const string DB_CLASS_PROPERTY_TEMPLATE =
+			"\t\tpublic {0} {0} {{ get; private set; }}\n";
 	}
 }

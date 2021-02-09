@@ -26,7 +26,9 @@ namespace Unitils
 			this.DrawPathField("dataOutputFolder");
 			this.serializedObject.ApplyModifiedProperties();
 
-			this.DrawGenerateTargets(data);
+			this.DrawEncryption(data);
+
+			this.DrawGenerationTargets(data);
 
 			EditorGUILayout.Space(10f);
 			EditorGUILayout.BeginHorizontal();
@@ -59,7 +61,26 @@ namespace Unitils
 			EditorGUILayout.EndHorizontal();
 		}
 
-		private void DrawGenerateTargets(TableGeneratorData data)
+		private void DrawEncryption(TableGeneratorData data)
+		{
+			EditorGUILayout.Space(5f);
+
+			EditorGUILayout.LabelField("Data Encryption Settings");
+			EditorGUILayout.BeginVertical(GUI.skin.box);
+
+			SerializedProperty isToMD5Property = this.serializedObject.FindProperty("isDataFileNameToMD5");
+			isToMD5Property.boolValue = EditorGUILayout.Toggle("File Name To MD5", isToMD5Property.boolValue);
+
+			EditorGUILayout.PropertyField(this.serializedObject.FindProperty("encryptionType"));
+			if (data.EncryptionType == Define.EncryptionType.AES) {
+				EditorGUILayout.PropertyField(this.serializedObject.FindProperty("encryptAesKey"), new GUIContent("AES Key"));
+				EditorGUILayout.PropertyField(this.serializedObject.FindProperty("encryptAesIv"), new GUIContent("AES IV"));
+			}
+
+			EditorGUILayout.EndVertical();
+		}
+
+		private void DrawGenerationTargets(TableGeneratorData data)
 		{
 			string inputFolder = Path.Combine(Application.dataPath, data.InputFolder);
 			if (!Directory.Exists(inputFolder)) return;
@@ -69,18 +90,30 @@ namespace Unitils
 
 			if (targets.Length <= 0) return;
 
-			List<TableGeneratorData.FolderData> folders = new List<TableGeneratorData.FolderData>(data.Folders);
-			data.Folders.Clear();
-			for (int i = 0; i < targets.Length; i++) {
-				TableGeneratorData.FolderData folderData = folders.FirstOrDefault(_ => _.path == targets[i]);
-				if (folderData == null) folderData = new TableGeneratorData.FolderData { path = targets[i] };
-				data.Folders.Add(folderData);
+			bool dontLayout = targets.Length != data.Folders.Count;
+			if (!dontLayout) {
+				for (int i = 0; i < targets.Length && !dontLayout; i++) {
+					dontLayout = targets[i] != data.Folders[i].path;
+				}
 			}
-			folders = data.Folders;
-			if (targets.Length > folders.Count) {
-				folders.RemoveRange(targets.Length - 1, targets.Length - folders.Count);
+
+			if (Event.current.type == EventType.Repaint) {
+				List<TableGeneratorData.FolderData> folders = new List<TableGeneratorData.FolderData>(data.Folders);
+				data.Folders.Clear();
+				for (int i = 0; i < targets.Length; i++) {
+					TableGeneratorData.FolderData folderData = folders.FirstOrDefault(_ => _.path == targets[i]);
+					if (folderData == null) folderData = new TableGeneratorData.FolderData { path = targets[i] };
+					data.Folders.Add(folderData);
+				}
+				folders = data.Folders;
+				if (targets.Length > folders.Count) {
+					folders.RemoveRange(targets.Length - 1, targets.Length - folders.Count);
+				}
+				if (dontLayout) return;
 			}
-			this.serializedObject.Update();
+			else {
+				if (dontLayout) return;
+			}
 
 			EditorGUILayout.Space(5f);
 
@@ -109,7 +142,7 @@ namespace Unitils
 				SerializedProperty isWritableTableProperty = folderProperty.FindPropertyRelative("isWritableTable");
 				isWritableTableProperty.boolValue = EditorGUILayout.Toggle("Is Writable Table", isWritableTableProperty.boolValue);
 
-				SerializedProperty separatorProperty = folderProperty.FindPropertyRelative("separator");
+				SerializedProperty separatorProperty = folderProperty.FindPropertyRelative("classNameSeparator");
 				EditorGUILayout.PropertyField(separatorProperty);
 				if (separatorProperty.stringValue.Length > 1) {
 					separatorProperty.stringValue = separatorProperty.stringValue.Substring(0, 1);
