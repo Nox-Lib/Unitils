@@ -60,7 +60,7 @@ namespace Unitils
 			History next = new History { sceneName = sceneName, arg = arg };
 
 			if (this.currentHistory != null) {
-				next.beforeSceneName = this.currentHistory.beforeSceneName;
+				next.beforeSceneName = this.currentHistory.sceneName;
 				if (this.currentScene != null) {
 					this.currentHistory.viewCache = this.currentScene.ViewCache;
 				}
