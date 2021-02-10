@@ -44,19 +44,20 @@ namespace Unitils
 			for (int i = 0; i < rootObjects.Length && this.currentScene == null; i++) {
 				this.currentScene = rootObjects[i].GetComponent<ISceneBase>();
 			}
-			if (this.currentScene != null) {
-				StartCoroutine(this.currentScene.OnBeforeEnter(null, null));
-			}
 		}
 
 
 		#region ISceneTransitionProvider
 
 		public bool IsRunning { get; private set; }
+
+		public string ActiveSceneName => this.currentHistory?.sceneName;
 		public string BeforeSceneName => this.currentHistory?.beforeSceneName;
 
 		public void Next(string sceneName, object arg = null)
 		{
+			if (this.IsRunning) return;
+
 			History next = new History { sceneName = sceneName, arg = arg };
 
 			if (this.currentHistory != null) {
@@ -72,21 +73,26 @@ namespace Unitils
 
 		public void Back(object arg = null)
 		{
-			if (this.previousSceneHistories.Count <= 0) return;
+			if (this.IsRunning || this.previousSceneHistories.Count <= 0) return;
 			History next = this.previousSceneHistories.Pop();
 			StartCoroutine(this.RunNext(next));
 		}
 
+		public bool IsActiveSubScene(string sceneName)
+		{
+			return this.addSubSceneNames.Contains(sceneName);
+		}
+
 		public void AddSubScene(string sceneName)
 		{
-			if (this.addSubSceneNames.Contains(sceneName)) return;
+			if (this.IsActiveSubScene(sceneName)) return;
 			SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
 			this.addSubSceneNames.Add(sceneName);
 		}
 
 		public void RemoveSubScene(string sceneName)
 		{
-			if (!this.addSubSceneNames.Contains(sceneName)) return;
+			if (!this.IsActiveSubScene(sceneName)) return;
 			SceneManager.UnloadSceneAsync(sceneName);
 			this.addSubSceneNames.Remove(sceneName);
 		}
@@ -101,6 +107,11 @@ namespace Unitils
 		public void ResetPreviousSceneHistories()
 		{
 			this.previousSceneHistories.Clear();
+		}
+
+		public void SendBackEvent()
+		{
+			this.currentScene?.OnBack();
 		}
 
 		#endregion
