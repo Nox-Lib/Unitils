@@ -10,7 +10,7 @@ namespace Unitils
 		public static void Activation()
 		{
 			if (instance == null) {
-				instance = new GameObject("AudioBgmPlayer", typeof(AudioBgmPlayer)).GetComponent<AudioBgmPlayer>();
+				instance = Utils.Unity.CreateGameObject<AudioBgmPlayer>("AudioBgmPlayer");
 				DontDestroyOnLoad(instance.gameObject);
 				instance.audioSources = new AudioSourceBgm[2];
 			}

@@ -7,7 +7,7 @@ namespace Unitils
 	{
 		public static class Unity
 		{
-			public static T CreateGameObject<T>(string name, Transform parent, params Type[] components) where T : Component
+			public static T CreateGameObject<T>(string name, Transform parent = null, params Type[] components) where T : Component
 			{
 				GameObject newObject;
 
@@ -17,7 +17,9 @@ namespace Unitils
 				else {
 					newObject = new GameObject(name, components);
 				}
-				newObject.transform.SetParent(parent, false);
+				if (parent != null) {
+					newObject.transform.SetParent(parent, false);
+				}
 
 				return newObject.GetOrAddComponent<T>();
 			}

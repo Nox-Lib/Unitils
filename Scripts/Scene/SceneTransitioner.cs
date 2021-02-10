@@ -7,6 +7,18 @@ namespace Unitils
 {
 	public class SceneTransitioner : MonoBehaviour, ISceneTransitionProvider
 	{
+		private static SceneTransitioner instance = null;
+
+		public static void Activation()
+		{
+			if (instance == null) {
+				instance = Utils.Unity.CreateGameObject<SceneTransitioner>("SceneTransitioner");
+				DontDestroyOnLoad(instance.gameObject);
+			}
+			ServiceLocator.Instance.Register<ISceneTransitionProvider>(instance);
+		}
+
+
 		private class History
 		{
 			public string sceneName;
@@ -20,6 +32,22 @@ namespace Unitils
 
 		private readonly Stack<History> previousSceneHistories = new Stack<History>();
 		private readonly List<string> addSubSceneNames = new List<string>();
+
+
+		private void Awake()
+		{
+			Scene scene = SceneManager.GetActiveScene();
+
+			this.currentHistory = new History { sceneName = scene.name };
+
+			GameObject[] rootObjects = scene.GetRootGameObjects();
+			for (int i = 0; i < rootObjects.Length && this.currentScene == null; i++) {
+				this.currentScene = rootObjects[i].GetComponent<ISceneBase>();
+			}
+			if (this.currentScene != null) {
+				StartCoroutine(this.currentScene.OnBeforeEnter(null, null));
+			}
+		}
 
 
 		#region ISceneTransitionProvider
@@ -97,6 +125,7 @@ namespace Unitils
 			this.currentHistory = next;
 
 			GameObject[] rootObjects = scene.GetRootGameObjects();
+			this.currentScene = null;
 			for (int i = 0; i < rootObjects.Length && this.currentScene == null; i++) {
 				this.currentScene = rootObjects[i].GetComponent<ISceneBase>();
 			}
