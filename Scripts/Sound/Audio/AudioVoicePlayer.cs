@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace Unitils
 {
@@ -11,9 +10,9 @@ namespace Unitils
 		public static void Activation()
 		{
 			if (instance == null) {
-				instance = new GameObject("AudioVoicePlayer", typeof(AudioVoicePlayer)).GetComponent<AudioVoicePlayer>();
-				SceneManager.MoveGameObjectToScene(instance.gameObject, SceneManager.GetSceneByName(Define.SceneType.Unitils.Name));
-				instance.audioSource = instance.gameObject.AddComponent<AudioSource>();
+				instance = Utils.Unity.CreateGameObject<AudioVoicePlayer>("AudioVoicePlayer", null, typeof(AudioSource));
+				DontDestroyOnLoad(instance.gameObject);
+				instance.audioSource = instance.GetComponent<AudioSource>();
 				instance.audioSource.playOnAwake = false;
 			}
 			ServiceLocator.Instance.Register<ISoundVoiceProvider>(instance);

@@ -1,9 +1,26 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
 
 namespace Unitils
 {
 	public static class TransformExtensions
 	{
+		public static void DestroyChildren(this Transform self)
+		{
+			foreach (Transform child in self) {
+				Object.Destroy(child.gameObject);
+			}
+		}
+
+		public static void DestroyChildren(this Transform self, IEnumerable<string> ignoreNames)
+		{
+			foreach (Transform child in self) {
+				if (!ignoreNames.Any(_ => child.name.Contains(_))) Object.Destroy(child.gameObject);
+			}
+		}
+
+
 		#region Position
 
 		public static void SetPosition(this Transform self, float x, float y, float z)

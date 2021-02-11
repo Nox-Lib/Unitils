@@ -6,6 +6,9 @@ namespace Unitils
 	{
 		public static void Launch()
 		{
+			SceneTransitioner.Activation();
+			SimpleFader.Activation();
+
 			AudioBgmPlayer.Activation();
 			AudioSePlayer.Activation();
 			AudioVoicePlayer.Activation();

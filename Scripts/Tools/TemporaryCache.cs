@@ -2,9 +2,9 @@
 
 namespace Unitils
 {
-	public class TemporaryCache<T> where T : class
+	public class TemporaryCache
 	{
-		private readonly LinkedList<KeyValuePair<string, T>> cache = new LinkedList<KeyValuePair<string, T>>();
+		private readonly LinkedList<KeyValuePair<string, object>> cache = new LinkedList<KeyValuePair<string, object>>();
 
 		private readonly int size;
 		private readonly bool isOneTime;
@@ -35,26 +35,26 @@ namespace Unitils
 			this.isOneTime = isOneTime;
 		}
 
-		public T Get(object key)
+		public T Get<T>(object key)
 		{
-			LinkedListNode<KeyValuePair<string, T>> node = this.GetNode(key);
-			if (node == null) return null;
+			LinkedListNode<KeyValuePair<string, object>> node = this.GetNode(key);
+			if (node == null) return default;
 
-			T result = node.Value.Value;
+			object result = node.Value.Value;
 			if (this.isOneTime) {
 				this.cache.Remove(node);
 			}
-			return result;
+			return (T)result;
 		}
 
-		public bool Set(object key, T item)
+		public bool Set(object key, object item)
 		{
 			string k = key.ToString();
 			if (string.IsNullOrEmpty(k) || item == null) {
 				return false;
 			}
 			this.Remove(k);
-			this.cache.AddLast(new KeyValuePair<string, T>(k, item));
+			this.cache.AddLast(new KeyValuePair<string, object>(k, item));
 
 			if (this.IsLimit) {
 				this.cache.RemoveFirst();
@@ -73,12 +73,12 @@ namespace Unitils
 		}
 
 
-		private LinkedListNode<KeyValuePair<string, T>> GetNode(object key)
+		private LinkedListNode<KeyValuePair<string, object>> GetNode(object key)
 		{
 			string k = key.ToString();
 			if (string.IsNullOrEmpty(k)) return null;
 
-			LinkedListNode<KeyValuePair<string, T>> node = this.cache.First;
+			LinkedListNode<KeyValuePair<string, object>> node = this.cache.First;
 			while (node != null) {
 				if (node.Value.Key.Equals(k)) break;
 				node = node.Next;
@@ -88,7 +88,7 @@ namespace Unitils
 
 		private void Remove(object key)
 		{
-			LinkedListNode<KeyValuePair<string, T>> node = this.GetNode(key);
+			LinkedListNode<KeyValuePair<string, object>> node = this.GetNode(key);
 			if (node != null) {
 				this.cache.Remove(node);
 			}
