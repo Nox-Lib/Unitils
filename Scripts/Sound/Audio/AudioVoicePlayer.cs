@@ -10,9 +10,9 @@ namespace Unitils
 		public static void Activation()
 		{
 			if (instance == null) {
-				instance = Utils.Unity.CreateGameObject<AudioVoicePlayer>("AudioVoicePlayer");
+				instance = Utils.Unity.CreateGameObject<AudioVoicePlayer>("AudioVoicePlayer", null, typeof(AudioSource));
 				DontDestroyOnLoad(instance.gameObject);
-				instance.audioSource = instance.gameObject.AddComponent<AudioSource>();
+				instance.audioSource = instance.GetComponent<AudioSource>();
 				instance.audioSource.playOnAwake = false;
 			}
 			ServiceLocator.Instance.Register<ISoundVoiceProvider>(instance);
