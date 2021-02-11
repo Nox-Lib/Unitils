@@ -11,7 +11,7 @@ namespace Unitils
 		public static void Activation()
 		{
 			if (instance == null) {
-				instance = Instantiate(Resources.Load<GameObject>("Prefabs/SimpleFader")).GetComponent<SimpleFader>();
+				instance = Utils.Unity.LoadPrefab<SimpleFader>("Prefabs/SimpleFader");
 				instance.name = typeof(SimpleFader).Name;
 				DontDestroyOnLoad(instance.gameObject);
 			}

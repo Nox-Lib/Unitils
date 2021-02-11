@@ -23,6 +23,19 @@ namespace Unitils
 
 				return newObject.GetOrAddComponent<T>();
 			}
+
+
+			public static GameObject LoadPrefab(string resourcePath)
+			{
+				GameObject prefab = Resources.Load<GameObject>(resourcePath);
+				return UnityEngine.Object.Instantiate(prefab);
+			}
+
+			public static T LoadPrefab<T>(string resourcePath) where T : Component
+			{
+				GameObject prefab = Resources.Load<GameObject>(resourcePath);
+				return UnityEngine.Object.Instantiate(prefab).GetComponent<T>();
+			}
 		}
 	}
 }

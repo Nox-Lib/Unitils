@@ -24,5 +24,30 @@ namespace Unitils
 			}
 			return component;
 		}
+
+		public static void SetTag(this GameObject self, string tagName, bool isChildren)
+		{
+			self.tag = tagName;
+			if (isChildren) {
+				foreach (Transform child in self.transform) {
+					child.gameObject.SetTag(tagName, isChildren);
+				}
+			}
+		}
+
+		public static void SetLayer(this GameObject self, string layerName, bool isChildren)
+		{
+			self.SetLayer(LayerMask.NameToLayer(layerName), isChildren);
+		}
+
+		public static void SetLayer(this GameObject self, int layer, bool isChildren)
+		{
+			self.layer = layer;
+			if (isChildren) {
+				foreach (Transform child in self.transform) {
+					child.gameObject.SetLayer(layer, isChildren);
+				}
+			}
+		}
 	}
 }
