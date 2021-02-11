@@ -31,10 +31,12 @@ namespace Unitils
 			}
 		}
 
+
 		[SerializeField] private Image fadeImage;
 
 		private Configuration configuration = new Configuration();
 		private Tweener fadeTweener;
+
 
 		private void Awake()
 		{
@@ -42,6 +44,7 @@ namespace Unitils
 			this.fadeImage.SetColor(this.configuration.color);
 			this.fadeImage.SetAlpha(0f);
 		}
+
 
 		#region IFadeProvider
 
