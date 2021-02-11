@@ -44,6 +44,10 @@ namespace Unitils
 			for (int i = 0; i < rootObjects.Length && this.currentScene == null; i++) {
 				this.currentScene = rootObjects[i].GetComponent<ISceneBase>();
 			}
+
+			if (this.currentScene != null) {
+				this.currentScene.OnBeforeEnter(null, null);
+			}
 		}
 
 
