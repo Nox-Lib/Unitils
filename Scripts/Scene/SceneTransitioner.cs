@@ -34,7 +34,7 @@ namespace Unitils
 		private readonly List<string> addSubSceneNames = new List<string>();
 
 
-		private void Awake()
+		private void Start()
 		{
 			Scene scene = SceneManager.GetActiveScene();
 
@@ -46,7 +46,7 @@ namespace Unitils
 			}
 
 			if (this.currentScene != null) {
-				this.currentScene.OnBeforeEnter(null, null);
+				StartCoroutine(this.currentScene.OnBeforeEnter(null, null));
 			}
 		}
 
