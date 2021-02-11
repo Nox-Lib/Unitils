@@ -8,5 +8,10 @@ namespace Unitils
 		{
 			if (self != null) self.enabled = enabled;
 		}
+
+		public static T GetOrAddComponent<T>(this Behaviour self) where T : Component
+		{
+			return self != null ? self.gameObject.GetOrAddComponent<T>() : null;
+		}
 	}
 }
