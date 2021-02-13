@@ -8,7 +8,7 @@ namespace Unitils
 	{
 		public static class Security
 		{
-			private readonly static Random random = new Random();
+			private static readonly Random random = new Random();
 
 			public static string GeneratePassword(int length, bool useNumber = true, bool useUpper = true, bool useLower = true, bool useSymbol = true)
 			{
