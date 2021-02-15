@@ -1,10 +1,9 @@
-﻿using System.Collections.Generic;
-using UnityEngine.UI;
+using System.Collections.Generic;
 using UnityEngine.EventSystems;
 
 namespace Unitils
 {
-	public class MultitapControlGraphicRaycaster : GraphicRaycaster
+	public class MultitapControlPhysics2DRaycaster : Physics2DRaycaster
 	{
 		public bool isSingleTapMode = true;
 
