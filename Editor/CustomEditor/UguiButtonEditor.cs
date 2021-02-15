@@ -68,8 +68,11 @@ namespace Unitils
 				EditorGUILayout.PropertyField(enabledAnimationProperty, new GUIContent("Enabled"));
 				if (enabledAnimationProperty.boolValue) {
 					EditorGUILayout.PropertyField(this.serializedObject.FindProperty("duration"));
+					GUILayout.Space(4f);
+					EditorGUILayout.PropertyField(this.serializedObject.FindProperty("normalScale"));
 					EditorGUILayout.PropertyField(this.serializedObject.FindProperty("enteredScale"));
 					EditorGUILayout.PropertyField(this.serializedObject.FindProperty("pressedScale"));
+					GUILayout.Space(4f);
 					EditorGUILayout.PropertyField(this.serializedObject.FindProperty("normalColor"));
 					EditorGUILayout.PropertyField(this.serializedObject.FindProperty("enteredColor"));
 					EditorGUILayout.PropertyField(this.serializedObject.FindProperty("pressedColor"));

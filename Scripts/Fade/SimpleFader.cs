@@ -35,7 +35,6 @@ namespace Unitils
 		[SerializeField] private Image fadeImage;
 
 		private Configuration configuration = new Configuration();
-		private Tweener fadeTweener;
 
 
 		private void Awake()
@@ -48,42 +47,41 @@ namespace Unitils
 
 		#region IFadeProvider
 
-		public bool IsRunning => this.fadeTweener != null;
+		public bool IsRunning { get; private set; }
 
 		public void SetConfiguration(object arg)
 		{
-			this.configuration = (arg as Configuration) ?? this.configuration;
+			this.configuration = (arg as Configuration) ?? new Configuration();
 			this.fadeImage.SetColor(this.configuration.color);
 		}
 
 		public void SetFactor(float factor)
 		{
-			factor = Mathf.Clamp01(factor);
-			if (this.fadeTweener != null) this.fadeImage.SetAlpha(factor);
+			this.fadeImage.SetAlpha(Mathf.Clamp01(factor));
 		}
 
 		public void FadeIn()
 		{
-			if (this.fadeTweener != null) this.fadeTweener.Kill();
+			this.IsRunning = true;
 
-			this.fadeTweener = this.fadeImage
-				.DOFade(0f, this.configuration.duration)
+			this.fadeImage.DOKill();
+
+			this.fadeImage.DOFade(0f, this.configuration.duration)
 				.OnComplete(() =>
 				{
-					this.fadeTweener = null;
+					this.IsRunning = false;
 					this.fadeImage.SafeEnabled(false);
 				});
 		}
 
 		public void FadeOut()
 		{
-			if (this.fadeTweener != null) this.fadeTweener.Kill();
+			this.IsRunning = true;
 
 			this.fadeImage.SafeEnabled(true);
+			this.fadeImage.DOKill();
 
-			this.fadeTweener = this.fadeImage
-				.DOFade(1f, this.configuration.duration)
-				.OnComplete(() => this.fadeTweener = null);
+			this.fadeImage.DOFade(1f, this.configuration.duration).OnComplete(() => this.IsRunning = false);
 		}
 
 		#endregion
