@@ -9,10 +9,12 @@ namespace Unitils
 {
 	public class TextureImportSettingsOverride : ScriptableObject
 	{
+		private const string ASSET_PATH = "Assets/UnitilsApps/Editor/Data/OverrideTextureImportSettings/Configurations.asset";
+
 		private static TextureImportSettingsOverride instance = null;
 		public static TextureImportSettingsOverride Instance {
 			get {
-				return instance = instance ??= Resources.Load<TextureImportSettingsOverride>(Define.TEXTURE_IMPORT_SETTINGS_OVERRIDE);
+				return instance = instance ??= AssetDatabase.LoadAssetAtPath<TextureImportSettingsOverride>(ASSET_PATH);
 			}
 		}
 
