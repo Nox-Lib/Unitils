@@ -114,11 +114,11 @@ namespace Unitils
 			string primaryUpperCamelName = string.Concat(csvHeader.columns[csvHeader.primaryIndex].Split('_').Select(_ => Utils.Text.ToUpper(_, 0)));
 			string primaryLowerCamelName = Utils.Text.ToLower(primaryUpperCamelName, 0);
 
-			string inheritance = (configuration.isWritable ? "WritableTable" : "ReadonlyTable") + $"<{modelClassName}, {primaryType}>";
+			string inheritance = (configuration.isWritable ? "WritableTable" : "ReadonlyTable") + $"<{modelClassName}>";
 
 			Util.SecondaryInfo secondaryInfo = Util.GetSecondaryInfo(csvHeader);
 
-			string classBody = string.Format(TableGeneratorTemplate.Table.PRIMARY_PROPERTY, modelClassName, primaryType, primaryUpperCamelName);
+			string classBody = string.Format(TableGeneratorTemplate.Table.PRIMARY_PROPERTY, modelClassName, primaryType);
 
 			if (secondaryInfo.use) {
 				string useFindBySecondaryMethodTemplate = secondaryInfo.isUnique
@@ -126,7 +126,7 @@ namespace Unitils
 					: TableGeneratorTemplate.Table.FIND_BY_SECONDARY_NONUNIQUE_METHOD;
 
 				classBody += string.Format(TableGeneratorTemplate.Table.SECONDARY_PROPERTY, modelClassName, secondaryInfo.type, modelClassName);
-				classBody += string.Format(TableGeneratorTemplate.Table.CONSTRUCTOR_TEMPLATE_FOR_SECONDARY, tableClassName, modelClassName, secondaryInfo.selector, secondaryInfo.type);
+				classBody += string.Format(TableGeneratorTemplate.Table.CONSTRUCTOR_TEMPLATE_FOR_SECONDARY, tableClassName, modelClassName, primaryUpperCamelName, primaryType, secondaryInfo.selector, secondaryInfo.type);
 				classBody += string.Format(TableGeneratorTemplate.Table.FIND_BY_METHOD, modelClassName, primaryUpperCamelName, primaryType, primaryLowerCamelName);
 				classBody += string.Format(useFindBySecondaryMethodTemplate, modelClassName, secondaryInfo.findMethod, secondaryInfo.type);
 				if (secondaryInfo.isUnique) {
@@ -134,7 +134,7 @@ namespace Unitils
 				}
 			}
 			else {
-				classBody += string.Format(TableGeneratorTemplate.Table.CONSTRUCTOR, tableClassName, modelClassName);
+				classBody += string.Format(TableGeneratorTemplate.Table.CONSTRUCTOR, tableClassName, modelClassName, primaryUpperCamelName, primaryType);
 				classBody += string.Format(TableGeneratorTemplate.Table.FIND_BY_METHOD, modelClassName, primaryUpperCamelName, primaryType, primaryLowerCamelName);
 			}
 
@@ -168,16 +168,26 @@ namespace Unitils
 			List<List<string>> csv = csvReader.ParseCSV(File.ReadAllText(configuration.filePath));
 
 			string tableName = csv[0][0];
-			List<string> columns = csv[1].Select(_ => _.ToLower()).ToList();
+			
+			int primaryIndex = csv[2].FindIndex(_ => _.ToLower().Contains("primary"));
+			if (primaryIndex < 0) {
+				Debug.Log($"[TableGenerator] table name: {tableName}, primary key not found.");
+				return;
+			}
 
+			List<string> columns = csv[1].Select(_ => _.ToLower()).ToList();
 			for (int i = 0; i < columns.Count; i++) {
 				columns[i] = string.Concat(columns[i].Split('_').Select(word => Utils.Text.ToUpper(word, 0)));
 				columns[i] = Utils.Text.ToLower(columns[i], 0);
 			}
 
+			csv.RemoveRange(0, 5);
+			Comparer<string> comparer = Comparer<string>.Default;
+			csv.Sort((a, b) => comparer.Compare(a[primaryIndex], b[primaryIndex]));
+
 			string jsonText = "";
 
-			for (int i = 5; i < csv.Count; i++) {
+			for (int i = 0; i < csv.Count; i++) {
 				string record = "{";
 				for (int j = 0; j < columns.Count; j++) {
 					record += $"\"{columns[j]}\":\"{csv[i][j].Replace("\"", "\\\"").Replace("\n", "\\n")}\",";

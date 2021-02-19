@@ -48,26 +48,32 @@ namespace Unitils
 				"}}";
 
 			public const string PRIMARY_PROPERTY =
-				"\t\tprotected override Func<{0}, {1}> PrimaryKeySelector => _ => _.{2};\n\n";
+				"\t\tprivate readonly Func<{0}, {1}> primaryKeySelector;\n\n";
 
 			public const string SECONDARY_PROPERTY =
 				"\t\tprivate readonly Func<{0}, {1}> secondaryIndexSelector;\n" +
 				"\t\tprivate readonly {2}[] secondaryIndex;\n\n";
 
 			public const string CONSTRUCTOR =
-				"\t\tpublic {0}({1}[] source) : base(source) {{}}\n\n";
+				"\t\tpublic {0}({1}[] source) : base(source)\n" +
+				"\t\t{{\n" +
+				"\t\t\tthis.primaryKeySelector = _ => _.{2};" +
+//				"\t\t\tthis.source = this.CloneAndSortBy(this.primaryKeySelector, Comparer<{3}>.Default);\n" +
+				"\t\t}}\n\n";
 
 			public const string CONSTRUCTOR_TEMPLATE_FOR_SECONDARY =
 				"\t\tpublic {0}({1}[] source) : base(source)\n" +
 				"\t\t{{\n" +
-				"\t\t\tthis.secondaryIndexSelector = _ => {2};\n" +
-				"\t\t\tthis.secondaryIndex = this.CloneAndSortBy(this.secondaryIndexSelector, Comparer<{3}>.Default);\n" +
+				"\t\t\tthis.primaryKeySelector = _ => _.{2};\n" +
+//				"\t\t\t//this.source = this.CloneAndSortBy(this.primaryKeySelector, Comparer<{3}>.Default);\n" +
+				"\t\t\tthis.secondaryIndexSelector = _ => {4};\n" +
+				"\t\t\tthis.secondaryIndex = this.CloneAndSortBy(this.secondaryIndexSelector, Comparer<{5}>.Default);\n" +
 				"\t\t}}\n\n";
 
 			public const string FIND_BY_METHOD =
 				"\t\tpublic {0} FindBy{1}({2} {3})\n" +
 				"\t\t{{\n" +
-				"\t\t\treturn this.FindUnique(this.source, this.PrimaryKeySelector, Comparer<{2}>.Default, {3});\n" +
+				"\t\t\treturn this.FindUnique(this.source, this.primaryKeySelector, Comparer<{2}>.Default, {3});\n" +
 				"\t\t}}\n\n";
 
 			public const string FIND_BY_SECONDARY_METHOD =

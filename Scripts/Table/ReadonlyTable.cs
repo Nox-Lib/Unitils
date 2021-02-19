@@ -3,10 +3,8 @@ using System.Collections.Generic;
 
 namespace Unitils
 {
-	public abstract class ReadonlyTable<TElement, TPrimaryKey>
+	public abstract class ReadonlyTable<TElement>
 	{
-		protected abstract Func<TElement, TPrimaryKey> PrimaryKeySelector { get; }
-
 		public RangeList<TElement> All => new RangeList<TElement>(this.source, 0, this.source.Length);
 
 		protected TElement[] source;
@@ -14,7 +12,6 @@ namespace Unitils
 		protected ReadonlyTable(TElement[] source)
 		{
 			this.source = source;
-			this.source = this.CloneAndSortBy(this.PrimaryKeySelector, Comparer<TPrimaryKey>.Default);
 		}
 
 		protected TElement ThrowKeyNotFound<TKey>(TKey key)
