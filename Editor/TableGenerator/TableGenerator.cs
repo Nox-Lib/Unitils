@@ -90,7 +90,7 @@ namespace Unitils
 
 		private static void GenerateModelClass(Util.Configuration configuration, Util.CsvHeader csvHeader, string outputFolderPath, string spaceName, string modelClassName)
 		{
-			string usePropertyFormat = configuration.isWritable
+			string usePropertyTemplate = configuration.isWritable
 				? TableGeneratorTemplate.Model.WRITABLE_PROPERTY
 				: TableGeneratorTemplate.Model.READONLY_PROPERTY;
 
@@ -100,7 +100,7 @@ namespace Unitils
 				string upperCamelName = string.Concat(words.Select(_ => Utils.Text.ToUpper(_, 0)));
 				string lowerCamelName = Utils.Text.ToLower(upperCamelName, 0);
 				string comment = csvHeader.comments[i].Replace("\n", "\n\t\t/// ");
-				classBody += string.Format(usePropertyFormat, csvHeader.types[i], lowerCamelName, upperCamelName, comment);
+				classBody += string.Format(usePropertyTemplate, csvHeader.types[i], lowerCamelName, upperCamelName, comment);
 			}
 			while (classBody.EndsWith("\n")) classBody = classBody.TrimEnd('\n');
 
@@ -114,17 +114,24 @@ namespace Unitils
 			string primaryUpperCamelName = string.Concat(csvHeader.columns[csvHeader.primaryIndex].Split('_').Select(_ => Utils.Text.ToUpper(_, 0)));
 			string primaryLowerCamelName = Utils.Text.ToLower(primaryUpperCamelName, 0);
 
-			string inheritance = (configuration.isWritable ? "WritableTable" : "TableBase") + $"<{modelClassName}, {primaryType}>";
+			string inheritance = (configuration.isWritable ? "WritableTable" : "ReadonlyTable") + $"<{modelClassName}, {primaryType}>";
 
 			Util.SecondaryInfo secondaryInfo = Util.GetSecondaryInfo(csvHeader);
 
 			string classBody = string.Format(TableGeneratorTemplate.Table.PRIMARY_PROPERTY, modelClassName, primaryType, primaryUpperCamelName);
 
 			if (secondaryInfo.use) {
+				string useFindBySecondaryMethodTemplate = secondaryInfo.isUnique
+					? TableGeneratorTemplate.Table.FIND_BY_SECONDARY_METHOD
+					: TableGeneratorTemplate.Table.FIND_BY_SECONDARY_NONUNIQUE_METHOD;
+
 				classBody += string.Format(TableGeneratorTemplate.Table.SECONDARY_PROPERTY, modelClassName, secondaryInfo.type, modelClassName);
 				classBody += string.Format(TableGeneratorTemplate.Table.CONSTRUCTOR_TEMPLATE_FOR_SECONDARY, tableClassName, modelClassName, secondaryInfo.selector, secondaryInfo.type);
 				classBody += string.Format(TableGeneratorTemplate.Table.FIND_BY_METHOD, modelClassName, primaryUpperCamelName, primaryType, primaryLowerCamelName);
-				classBody += string.Format(TableGeneratorTemplate.Table.FIND_BY_SECONDARY_METHOD, modelClassName, secondaryInfo.findMethod, secondaryInfo.type);
+				classBody += string.Format(useFindBySecondaryMethodTemplate, modelClassName, secondaryInfo.findMethod, secondaryInfo.type);
+				if (secondaryInfo.isUnique) {
+					classBody += string.Format(TableGeneratorTemplate.Table.FIND_RANGE_METHOD, modelClassName, secondaryInfo.findMethod, secondaryInfo.type);
+				}
 			}
 			else {
 				classBody += string.Format(TableGeneratorTemplate.Table.CONSTRUCTOR, tableClassName, modelClassName);
@@ -240,7 +247,7 @@ namespace Unitils
 			public class SecondaryInfo
 			{
 				public bool use;
-				public bool isNonUnique;
+				public bool isUnique;
 				public string type;
 				public string selector;
 				public string findMethod;
@@ -307,11 +314,11 @@ namespace Unitils
 			public static SecondaryInfo GetSecondaryInfo(CsvHeader csvHeader)
 			{
 				List<int> secondaryIndices = new List<int>();
-				bool isNonUnique = false;
+				bool isUnique = true;
 				for (int i = 0; i < csvHeader.attributes.Count; i++) {
 					if (csvHeader.attributes[i].ToLower().Contains("secondary")) {
 						secondaryIndices.Add(i);
-						isNonUnique |= csvHeader.attributes[i].ToLower().Contains("nonunique");
+						isUnique &= !csvHeader.attributes[i].ToLower().Contains("nonunique");
 					}
 				}
 
@@ -351,7 +358,7 @@ namespace Unitils
 				SecondaryInfo secondaryInfo = new SecondaryInfo
 				{
 					use = use,
-					isNonUnique = isNonUnique,
+					isUnique = isUnique,
 					type = type,
 					selector = selector,
 					findMethod = findMethod

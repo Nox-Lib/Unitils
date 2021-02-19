@@ -67,13 +67,25 @@ namespace Unitils
 			public const string FIND_BY_METHOD =
 				"\t\tpublic {0} FindBy{1}({2} {3})\n" +
 				"\t\t{{\n" +
-				"\t\t\treturn this.FindBy(this.PrimaryKeySelector, Comparer<{2}>.Default, {3});\n" +
+				"\t\t\treturn this.FindUnique(this.source, this.PrimaryKeySelector, Comparer<{2}>.Default, {3});\n" +
 				"\t\t}}\n\n";
 
 			public const string FIND_BY_SECONDARY_METHOD =
+				"\t\tpublic {0} FindBy{1}({2} key)\n" +
+				"\t\t{{\n" +
+				"\t\t\treturn this.FindUnique(this.secondaryIndex, this.secondaryIndexSelector, Comparer<{2}>.Default, key);\n" +
+				"\t\t}}\n\n";
+
+			public const string FIND_BY_SECONDARY_NONUNIQUE_METHOD =
 				"\t\tpublic RangeList<{0}> FindBy{1}({2} key)\n" +
 				"\t\t{{\n" +
 				"\t\t\treturn this.FindMany(this.secondaryIndex, this.secondaryIndexSelector, Comparer<{2}>.Default, key);\n" +
+				"\t\t}}\n\n";
+
+			public const string FIND_RANGE_METHOD =
+				"\t\tpublic RangeList<{0}> FindRangeBy{1}({2} min, {2} max)\n" +
+				"\t\t{{\n" +
+				"\t\t\treturn this.FindUniqueRange(this.secondaryIndex, this.secondaryIndexSelector, Comparer<{2}>.Default, min, max);\n" +
 				"\t\t}}\n\n";
 		}
 
