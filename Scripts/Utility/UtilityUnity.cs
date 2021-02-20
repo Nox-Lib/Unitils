@@ -25,16 +25,24 @@ namespace Unitils
 			}
 
 
-			public static GameObject LoadPrefab(string resourcePath)
+			public static GameObject LoadPrefab(string resourcePath, Transform parent = null)
 			{
 				GameObject prefab = Resources.Load<GameObject>(resourcePath);
-				return UnityEngine.Object.Instantiate(prefab);
+				GameObject result = UnityEngine.Object.Instantiate(prefab);
+				if (parent != null) {
+					result.transform.SetParent(parent, false);
+				}
+				return result;
 			}
 
-			public static T LoadPrefab<T>(string resourcePath) where T : Component
+			public static T LoadPrefab<T>(string resourcePath, Transform parent = null) where T : Component
 			{
 				GameObject prefab = Resources.Load<GameObject>(resourcePath);
-				return UnityEngine.Object.Instantiate(prefab).GetComponent<T>();
+				T result = UnityEngine.Object.Instantiate(prefab).GetComponent<T>();
+				if (parent != null) {
+					result.transform.SetParent(parent, false);
+				}
+				return result;
 			}
 		}
 	}

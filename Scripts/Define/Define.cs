@@ -4,7 +4,6 @@
 	{
 		public const string SYSTEM_DATA = "Data/SystemData";
 		public const string BUTTON_SOUND_DATA = "Data/ButtonSoundData";
-		public const string TEXTURE_IMPORT_SETTINGS_OVERRIDE = "Data/OverrideTextureImportSettings/Configurations";
 
 		public const string SAMPLE_SE = "Sounds/sample";
 

@@ -42,6 +42,21 @@ namespace Unitils
 		{
 			self.position = new Vector3(self.position.x, self.position.y, z);
 		}
+
+		public static void AddPositionX(this Transform self, float x)
+		{
+			self.position = new Vector3(self.position.x + x, self.position.y, self.position.z);
+		}
+
+		public static void AddPositionY(this Transform self, float y)
+		{
+			self.position = new Vector3(self.position.x, self.position.y + y, self.position.z);
+		}
+
+		public static void AddPositionZ(this Transform self, float z)
+		{
+			self.position = new Vector3(self.position.x, self.position.y, self.position.z + z);
+		}
 		#endregion
 
 

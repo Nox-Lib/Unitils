@@ -52,13 +52,13 @@ namespace Unitils
 			string labelName = string.Join(" ", words);
 
 			EditorGUILayout.LabelField(labelName);
-			EditorGUILayout.BeginHorizontal(GUI.skin.box);
+			EditorGUILayout.BeginVertical(GUI.skin.box);
 			EditorGUI.indentLevel++;
 			EditorGUIUtility.labelWidth = 60f;
 			EditorGUILayout.PropertyField(this.serializedObject.FindProperty(propertyName), new GUIContent("Assets/"));
 			EditorGUIUtility.labelWidth = defaultLabelWidth;
 			EditorGUI.indentLevel--;
-			EditorGUILayout.EndHorizontal();
+			EditorGUILayout.EndVertical();
 		}
 
 		private void DrawEncryption(TableGeneratorData data)

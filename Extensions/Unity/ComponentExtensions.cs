@@ -13,5 +13,10 @@ namespace Unitils
 		{
 			if (self != null) self.gameObject.SafeDestory();
 		}
+
+		public static void DestoryGameObject(this Component self, float delay)
+		{
+			if (self != null) self.gameObject.SafeDestory(delay);
+		}
 	}
 }

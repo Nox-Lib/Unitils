@@ -24,7 +24,9 @@ namespace Unitils
 		}
 
 		public override bool IsInteractable {
-			get { return base.IsInteractable; }
+			get {
+				return base.IsInteractable;
+			}
 			set {
 				base.IsInteractable = value;
 				this.SetState(this.isInteractable ? State.Normal : State.Disable);
@@ -52,6 +54,7 @@ namespace Unitils
 
 		[SerializeField] private bool isEnabledAnimation = true;
 		[SerializeField] private float duration = 0.2f;
+		[SerializeField] private float normalScale = 1f;
 		[SerializeField] private float enteredScale = 1f;
 		[SerializeField] private float pressedScale = 1f;
 		[SerializeField] private Color normalColor = Color.white;
@@ -69,17 +72,10 @@ namespace Unitils
 		private float pressedTime;
 		private float invokedTime;
 
-		private Vector3 baseScale;
-		private Tweener changeScaleTweener;
 		private UguiColorGroup colorGroup;
 
 
-		protected void Awake()
-		{
-			this.baseScale = this.transform.localScale;
-		}
-
-		protected void Start()
+		private void Start()
 		{
 			this.isStarted = true;
 		}
@@ -122,14 +118,6 @@ namespace Unitils
 			}
 		}
 
-		private void OnDestroy()
-		{
-			if (this.changeScaleTweener != null) {
-				this.changeScaleTweener.Kill();
-				this.changeScaleTweener = null;
-			}
-		}
-
 
 		#region Animation
 
@@ -141,7 +129,7 @@ namespace Unitils
 
 			switch (state) {
 				case State.Normal:
-					this.SetScale(1f);
+					this.SetScale(this.normalScale);
 					this.SetColor(this.normalColor);
 					break;
 				case State.Enter:
@@ -153,7 +141,7 @@ namespace Unitils
 					this.SetColor(this.pressedColor);
 					break;
 				case State.Disable:
-					this.SetScale(1f);
+					this.SetScale(this.normalScale);
 					this.SetColor(this.disabledColor);
 					break;
 			}
@@ -161,17 +149,8 @@ namespace Unitils
 
 		private void SetScale(float scale)
 		{
-			Vector3 from = this.transform.localScale;
-			Vector3 to = this.baseScale * scale;
-
-			if (this.changeScaleTweener != null) {
-				this.changeScaleTweener.Kill();
-			}
-
-			this.changeScaleTweener = this.transform
-				.DOScale(scale, this.duration)
-				.SetEase(Ease.Linear)
-				.OnComplete(() => this.changeScaleTweener = null);
+			this.transform.DOKill();
+			this.transform.DOScale(scale, this.duration).SetEase(Ease.Linear);
 		}
 
 		private void SetColor(Color color)

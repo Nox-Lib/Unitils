@@ -34,7 +34,7 @@ namespace Unitils
 		private readonly List<string> addSubSceneNames = new List<string>();
 
 
-		private void Awake()
+		private void Start()
 		{
 			Scene scene = SceneManager.GetActiveScene();
 
@@ -43,6 +43,10 @@ namespace Unitils
 			GameObject[] rootObjects = scene.GetRootGameObjects();
 			for (int i = 0; i < rootObjects.Length && this.currentScene == null; i++) {
 				this.currentScene = rootObjects[i].GetComponent<ISceneBase>();
+			}
+
+			if (this.currentScene != null) {
+				StartCoroutine(this.currentScene.OnBeforeEnter(null, null));
 			}
 		}
 
