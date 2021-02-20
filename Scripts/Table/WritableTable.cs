@@ -10,9 +10,9 @@ namespace Unitils
 
 		protected List<TElement> source;
 
-		protected WritableTable(List<TElement> source)
+		protected WritableTable(List<TElement> source = null)
 		{
-			this.source = source;
+			this.source = source ?? new List<TElement>();
 		}
 
 		protected List<TElement> CloneAndSortBy<TKey>(Func<TElement, TKey> indexSelector, IComparer<TKey> comparer)
@@ -22,12 +22,15 @@ namespace Unitils
 			return result;
 		}
 
-		protected void Insert<TKey>(TElement element, List<TElement> indexList, Func<TElement, TKey> keySelector, IComparer<TKey> comparer)
+		protected void Insert<TKey>(TElement element, List<TElement> indexList, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, bool isUnique)
 		{
 			TKey key = keySelector(element);
+			if (isUnique && this.FindUnique(indexList, keySelector, comparer, key, false) != null) {
+				throw new ArgumentException($"key has already been added.Key: {key}");
+			}
 			int insertIndex = 0;
 			for (; insertIndex < indexList.Count; insertIndex++) {
-				if (comparer.Compare(key, keySelector(indexList[insertIndex])) > 0) break;
+				if (comparer.Compare(keySelector(indexList[insertIndex]), key) > 0) break;
 			}
 			indexList.Insert(insertIndex, element);
 		}

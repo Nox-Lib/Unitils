@@ -19,7 +19,7 @@ namespace Unitils
 			throw new KeyNotFoundException($"{typeof(TElement).FullName} key: {key}");
 		}
 
-		protected TElement[] CloneAndSort<TKey>(Func<TElement, TKey> indexSelector, IComparer<TKey> comparer)
+		protected TElement[] CloneAndSortBy<TKey>(Func<TElement, TKey> indexSelector, IComparer<TKey> comparer)
 		{
 			TKey[] keys = new TKey[this.source.Length];
 			TElement[] items = new TElement[this.source.Length];

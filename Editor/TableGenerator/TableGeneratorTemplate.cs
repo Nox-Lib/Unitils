@@ -57,7 +57,7 @@ namespace Unitils
 			public const string CONSTRUCTOR =
 				"\t\tpublic {0}({1}[] source) : base(source)\n" +
 				"\t\t{{\n" +
-				"\t\t\tthis.primaryKeySelector = _ => _.{2};" +
+				"\t\t\tthis.primaryKeySelector = _ => _.{2};\n" +
 //				"\t\t\tthis.source = this.CloneAndSortBy(this.primaryKeySelector, Comparer<{3}>.Default);\n" +
 				"\t\t}}\n\n";
 
@@ -112,14 +112,14 @@ namespace Unitils
 				"\t\tprivate readonly List<{2}> secondaryIndex;\n\n";
 
 			public const string CONSTRUCTOR =
-				"\t\tpublic {0}(List<{1}> source) : base(source)\n" +
+				"\t\tpublic {0}(List<{1}> source = null) : base(source)\n" +
 				"\t\t{{\n" +
-				"\t\t\tthis.primaryKeySelector = _ => _.{2};" +
+				"\t\t\tthis.primaryKeySelector = _ => _.{2};\n" +
 //				"\t\t\tthis.source = this.CloneAndSortBy(this.primaryKeySelector, Comparer<{3}>.Default);\n" +
 				"\t\t}}\n\n";
 
 			public const string CONSTRUCTOR_ALSO_SECONDARY =
-				"\t\tpublic {0}(List<{1}> source) : base(source)\n" +
+				"\t\tpublic {0}(List<{1}> source = null) : base(source)\n" +
 				"\t\t{{\n" +
 				"\t\t\tthis.primaryKeySelector = _ => _.{2};\n" +
 //				"\t\t\t//this.source = this.CloneAndSortBy(this.primaryKeySelector, Comparer<{3}>.Default);\n" +
@@ -148,18 +148,14 @@ namespace Unitils
 			public const string ADD_METHOD =
 				"\t\tpublic void Add({0} item)\n" +
 				"\t\t{{\n" +
-				"\t\t\t{0} find = this.FindUnique(this.source, this.primaryKeySelector, Comparer<{1}>.Default, item.{2}, false);\n" +
-				"\t\t\tif (find != null) throw new ArgumentException($\"key has already been added.Key: {{item.{2}}}\");\n" +
-				"\t\t\tthis.Insert(item, this.source, this.primaryKeySelector, Comparer<{1}>.Default);\n" +
+				"\t\t\tthis.Insert(item, this.source, this.primaryKeySelector, Comparer<{1}>.Default, true);\n" +
 				"\t\t}}\n\n";
 
 			public const string ADD_METHOD_ALSO_SECONDARY =
 				"\t\tpublic void Add({0} item)\n" +
 				"\t\t{{\n" +
-				"\t\t\t{0} find = this.FindUnique(this.source, this.primaryKeySelector, Comparer<{1}>.Default, item.{2}, false);\n" +
-				"\t\t\tif (find != null) throw new ArgumentException($\"key has already been added.Key: {{item.{2}}}\");\n" +
-				"\t\t\tthis.Insert(item, this.source, this.primaryKeySelector, Comparer<{1}>.Default);\n" +
-				"\t\t\tthis.Insert(item, this.secondaryIndex, this.secondaryIndexSelector, Comparer<{3}>.Default);\n" +
+				"\t\t\tthis.Insert(item, this.source, this.primaryKeySelector, Comparer<{1}>.Default, true);\n" +
+				"\t\t\tthis.Insert(item, this.secondaryIndex, this.secondaryIndexSelector, Comparer<{2}>.Default, {3});\n" +
 				"\t\t}}\n\n";
 
 			public const string REMOVE_KEY_METHOD =

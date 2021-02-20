@@ -163,14 +163,14 @@ namespace Unitils
 				classBody += string.Format(TableGeneratorTemplate.WTable.CONSTRUCTOR_ALSO_SECONDARY, tableClassName, modelClassName, primaryUpperCamelName, primaryType, secondaryInfo.selector, secondaryInfo.type);
 				classBody += string.Format(TableGeneratorTemplate.WTable.FIND_BY_METHOD, modelClassName, primaryUpperCamelName, primaryType, primaryLowerCamelName);
 				classBody += string.Format(useFindBySecondaryMethodTemplate, modelClassName, secondaryInfo.findMethod, secondaryInfo.type);
-				classBody += string.Format(TableGeneratorTemplate.WTable.ADD_METHOD_ALSO_SECONDARY, modelClassName, primaryType, primaryUpperCamelName, secondaryInfo.type);
+				classBody += string.Format(TableGeneratorTemplate.WTable.ADD_METHOD_ALSO_SECONDARY, modelClassName, primaryType, secondaryInfo.type, secondaryInfo.isUnique ? "true" : "false");
 				classBody += string.Format(TableGeneratorTemplate.WTable.REMOVE_KEY_METHOD, primaryLowerCamelName, primaryType);
 				classBody += string.Format(TableGeneratorTemplate.WTable.REMOVE_ITEM_METHOD_ALSO_SECONDARY, modelClassName);
 			}
 			else {
 				classBody += string.Format(TableGeneratorTemplate.WTable.CONSTRUCTOR, tableClassName, modelClassName, primaryUpperCamelName, primaryType);
 				classBody += string.Format(TableGeneratorTemplate.WTable.FIND_BY_METHOD, modelClassName, primaryUpperCamelName, primaryType, primaryLowerCamelName);
-				classBody += string.Format(TableGeneratorTemplate.WTable.ADD_METHOD, modelClassName, primaryType, primaryUpperCamelName);
+				classBody += string.Format(TableGeneratorTemplate.WTable.ADD_METHOD, modelClassName, primaryType);
 				classBody += string.Format(TableGeneratorTemplate.WTable.REMOVE_KEY_METHOD, primaryLowerCamelName, primaryType);
 				classBody += string.Format(TableGeneratorTemplate.WTable.REMOVE_ITEM_METHOD, modelClassName);
 			}
