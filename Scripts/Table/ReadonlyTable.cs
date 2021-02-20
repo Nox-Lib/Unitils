@@ -19,7 +19,7 @@ namespace Unitils
 			throw new KeyNotFoundException($"{typeof(TElement).FullName} key: {key}");
 		}
 
-		protected TElement[] CloneAndSortBy<TKey>(Func<TElement, TKey> indexSelector, IComparer<TKey> comparer)
+		protected TElement[] CloneAndSort<TKey>(Func<TElement, TKey> indexSelector, IComparer<TKey> comparer)
 		{
 			TKey[] keys = new TKey[this.source.Length];
 			TElement[] items = new TElement[this.source.Length];
@@ -50,17 +50,6 @@ namespace Unitils
 			return this.ThrowKeyNotFound(key);
 		}
 
-		protected RangeList<TElement> FindUniqueRange<TKey>(TElement[] indexArray, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, TKey min, TKey max)
-		{
-			int minIndex = FindClosest(indexArray, 0, indexArray.Length, min, keySelector, comparer, false);
-			int maxIndex = FindClosest(indexArray, 0, indexArray.Length, max, keySelector, comparer, true);
-
-			if (minIndex == -1) minIndex = 0;
-			if (maxIndex == indexArray.Length) maxIndex -= 1;
-
-			return new RangeList<TElement>(indexArray, minIndex, maxIndex);
-		}
-
 		protected RangeList<TElement> FindMany<TKey>(TElement[] indexArray, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, TKey key)
 		{
 			int minIndex = this.LowerBound(indexArray, 0, indexArray.Length, key, keySelector, comparer);
@@ -72,31 +61,6 @@ namespace Unitils
 			return new RangeList<TElement>(indexArray, minIndex, maxIndex);
 		}
 
-
-		private static int FindClosest<TKey>(TElement[] array, int min, int max, TKey key, Func<TElement, TKey> selector, IComparer<TKey> comparer, bool selectLower)
-		{
-			if (array.Length == 0) return -1;
-
-			min -= 1;
-
-			while (max - min > 1) {
-				var mid = min + ((max - min) >> 1);
-				var found = comparer.Compare(selector(array[mid]), key);
-
-				if (found == 0) {
-					min = max = mid;
-					break;
-				}
-				if (found >= 1) {
-					max = mid;
-				}
-				else {
-					min = mid;
-				}
-			}
-
-			return selectLower ? min : max;
-		}
 
 		private int LowerBound<TKey>(TElement[] array, int min, int max, TKey key, Func<TElement, TKey> selector, IComparer<TKey> comparer)
 		{

@@ -75,7 +75,12 @@ namespace Unitils
 			if (!Directory.Exists(outputFolderPath)) Directory.CreateDirectory(outputFolderPath);
 
 			GenerateModelClass(configuration, csvHeader, outputFolderPath, spaceName, modelClassName);
-			GenerateTableClass(configuration, csvHeader, outputFolderPath, spaceName, modelClassName, tableClassName);
+			if (configuration.isWritable) {
+				GenerateWritableTableClass(csvHeader, outputFolderPath, spaceName, modelClassName, tableClassName);
+			}
+			else {
+				GenerateReadonlyTableClass(csvHeader, outputFolderPath, spaceName, modelClassName, tableClassName);
+			}
 
 			Util.DBInfo dbInfo = dbInfos.FirstOrDefault(_ => _.spaceName == spaceName);
 			if (dbInfo == null) {
@@ -108,39 +113,71 @@ namespace Unitils
 			File.WriteAllText(Path.Combine(outputFolderPath, $"{modelClassName}.cs"), classText);
 		}
 
-		private static void GenerateTableClass(Util.Configuration configuration, Util.CsvHeader csvHeader, string outputFolderPath, string spaceName, string modelClassName, string tableClassName)
+		private static void GenerateReadonlyTableClass(Util.CsvHeader csvHeader, string outputFolderPath, string spaceName, string modelClassName, string tableClassName)
 		{
 			string primaryType = csvHeader.types[csvHeader.primaryIndex];
 			string primaryUpperCamelName = string.Concat(csvHeader.columns[csvHeader.primaryIndex].Split('_').Select(_ => Utils.Text.ToUpper(_, 0)));
 			string primaryLowerCamelName = Utils.Text.ToLower(primaryUpperCamelName, 0);
 
-			string inheritance = (configuration.isWritable ? "WritableTable" : "ReadonlyTable") + $"<{modelClassName}>";
-
 			Util.SecondaryInfo secondaryInfo = Util.GetSecondaryInfo(csvHeader);
 
-			string classBody = string.Format(TableGeneratorTemplate.Table.PRIMARY_PROPERTY, modelClassName, primaryType);
+			string classBody = string.Format(TableGeneratorTemplate.RTable.PRIMARY_PROPERTY, modelClassName, primaryType);
 
 			if (secondaryInfo.use) {
 				string useFindBySecondaryMethodTemplate = secondaryInfo.isUnique
-					? TableGeneratorTemplate.Table.FIND_BY_SECONDARY_METHOD
-					: TableGeneratorTemplate.Table.FIND_BY_SECONDARY_NONUNIQUE_METHOD;
+					? TableGeneratorTemplate.RTable.FIND_BY_SECONDARY_METHOD
+					: TableGeneratorTemplate.RTable.FIND_BY_SECONDARY_NONUNIQUE_METHOD;
 
-				classBody += string.Format(TableGeneratorTemplate.Table.SECONDARY_PROPERTY, modelClassName, secondaryInfo.type, modelClassName);
-				classBody += string.Format(TableGeneratorTemplate.Table.CONSTRUCTOR_TEMPLATE_FOR_SECONDARY, tableClassName, modelClassName, primaryUpperCamelName, primaryType, secondaryInfo.selector, secondaryInfo.type);
-				classBody += string.Format(TableGeneratorTemplate.Table.FIND_BY_METHOD, modelClassName, primaryUpperCamelName, primaryType, primaryLowerCamelName);
+				classBody += string.Format(TableGeneratorTemplate.RTable.SECONDARY_PROPERTY, modelClassName, secondaryInfo.type, modelClassName);
+				classBody += string.Format(TableGeneratorTemplate.RTable.CONSTRUCTOR_ALSO_SECONDARY, tableClassName, modelClassName, primaryUpperCamelName, primaryType, secondaryInfo.selector, secondaryInfo.type);
+				classBody += string.Format(TableGeneratorTemplate.RTable.FIND_BY_METHOD, modelClassName, primaryUpperCamelName, primaryType, primaryLowerCamelName);
 				classBody += string.Format(useFindBySecondaryMethodTemplate, modelClassName, secondaryInfo.findMethod, secondaryInfo.type);
-				if (secondaryInfo.isUnique) {
-					classBody += string.Format(TableGeneratorTemplate.Table.FIND_RANGE_METHOD, modelClassName, secondaryInfo.findMethod, secondaryInfo.type);
-				}
 			}
 			else {
-				classBody += string.Format(TableGeneratorTemplate.Table.CONSTRUCTOR, tableClassName, modelClassName, primaryUpperCamelName, primaryType);
-				classBody += string.Format(TableGeneratorTemplate.Table.FIND_BY_METHOD, modelClassName, primaryUpperCamelName, primaryType, primaryLowerCamelName);
+				classBody += string.Format(TableGeneratorTemplate.RTable.CONSTRUCTOR, tableClassName, modelClassName, primaryUpperCamelName, primaryType);
+				classBody += string.Format(TableGeneratorTemplate.RTable.FIND_BY_METHOD, modelClassName, primaryUpperCamelName, primaryType, primaryLowerCamelName);
 			}
 
 			while (classBody.EndsWith("\n")) classBody = classBody.TrimEnd('\n');
 
-			string classText = string.Format(TableGeneratorTemplate.Table.CLASS, spaceName, tableClassName, inheritance, classBody);
+			string classText = string.Format(TableGeneratorTemplate.RTable.CLASS, spaceName, tableClassName, modelClassName, classBody);
+			File.WriteAllText(Path.Combine(outputFolderPath, $"{tableClassName}.cs"), classText);
+		}
+
+		private static void GenerateWritableTableClass(Util.CsvHeader csvHeader, string outputFolderPath, string spaceName, string modelClassName, string tableClassName)
+		{
+			string primaryType = csvHeader.types[csvHeader.primaryIndex];
+			string primaryUpperCamelName = string.Concat(csvHeader.columns[csvHeader.primaryIndex].Split('_').Select(_ => Utils.Text.ToUpper(_, 0)));
+			string primaryLowerCamelName = Utils.Text.ToLower(primaryUpperCamelName, 0);
+
+			Util.SecondaryInfo secondaryInfo = Util.GetSecondaryInfo(csvHeader);
+
+			string classBody = string.Format(TableGeneratorTemplate.WTable.PRIMARY_PROPERTY, modelClassName, primaryType);
+
+			if (secondaryInfo.use) {
+				string useFindBySecondaryMethodTemplate = secondaryInfo.isUnique
+					? TableGeneratorTemplate.WTable.FIND_BY_SECONDARY_METHOD
+					: TableGeneratorTemplate.WTable.FIND_BY_SECONDARY_NONUNIQUE_METHOD;
+
+				classBody += string.Format(TableGeneratorTemplate.WTable.SECONDARY_PROPERTY, modelClassName, secondaryInfo.type, modelClassName);
+				classBody += string.Format(TableGeneratorTemplate.WTable.CONSTRUCTOR_ALSO_SECONDARY, tableClassName, modelClassName, primaryUpperCamelName, primaryType, secondaryInfo.selector, secondaryInfo.type);
+				classBody += string.Format(TableGeneratorTemplate.WTable.FIND_BY_METHOD, modelClassName, primaryUpperCamelName, primaryType, primaryLowerCamelName);
+				classBody += string.Format(useFindBySecondaryMethodTemplate, modelClassName, secondaryInfo.findMethod, secondaryInfo.type);
+				classBody += string.Format(TableGeneratorTemplate.WTable.ADD_METHOD_ALSO_SECONDARY, modelClassName, primaryType, primaryUpperCamelName, secondaryInfo.type);
+				classBody += string.Format(TableGeneratorTemplate.WTable.REMOVE_KEY_METHOD, primaryLowerCamelName, primaryType);
+				classBody += string.Format(TableGeneratorTemplate.WTable.REMOVE_ITEM_METHOD_ALSO_SECONDARY, modelClassName);
+			}
+			else {
+				classBody += string.Format(TableGeneratorTemplate.WTable.CONSTRUCTOR, tableClassName, modelClassName, primaryUpperCamelName, primaryType);
+				classBody += string.Format(TableGeneratorTemplate.WTable.FIND_BY_METHOD, modelClassName, primaryUpperCamelName, primaryType, primaryLowerCamelName);
+				classBody += string.Format(TableGeneratorTemplate.WTable.ADD_METHOD, modelClassName, primaryType, primaryUpperCamelName);
+				classBody += string.Format(TableGeneratorTemplate.WTable.REMOVE_KEY_METHOD, primaryLowerCamelName, primaryType);
+				classBody += string.Format(TableGeneratorTemplate.WTable.REMOVE_ITEM_METHOD, modelClassName);
+			}
+
+			while (classBody.EndsWith("\n")) classBody = classBody.TrimEnd('\n');
+
+			string classText = string.Format(TableGeneratorTemplate.WTable.CLASS, spaceName, tableClassName, modelClassName, classBody);
 			File.WriteAllText(Path.Combine(outputFolderPath, $"{tableClassName}.cs"), classText);
 		}
 
@@ -174,6 +211,7 @@ namespace Unitils
 				Debug.Log($"[TableGenerator] table name: {tableName}, primary key not found.");
 				return;
 			}
+			string primaryType = csv[3][primaryIndex];
 
 			List<string> columns = csv[1].Select(_ => _.ToLower()).ToList();
 			for (int i = 0; i < columns.Count; i++) {
@@ -182,8 +220,28 @@ namespace Unitils
 			}
 
 			csv.RemoveRange(0, 5);
-			Comparer<string> comparer = Comparer<string>.Default;
-			csv.Sort((a, b) => comparer.Compare(a[primaryIndex], b[primaryIndex]));
+
+			switch (primaryType) {
+				case "int": 
+					Comparer<int> intComparer = Comparer<int>.Default;
+					csv.Sort((a, b) => intComparer.Compare(int.Parse(a[primaryIndex]), int.Parse(b[primaryIndex])));
+					break;
+				case "long":
+					Comparer<long> longLomparer = Comparer<long>.Default;
+					csv.Sort((a, b) => longLomparer.Compare(long.Parse(a[primaryIndex]), long.Parse(b[primaryIndex])));
+					break;
+				case "float":
+					Comparer<float> floatComparer = Comparer<float>.Default;
+					csv.Sort((a, b) => floatComparer.Compare(float.Parse(a[primaryIndex]), float.Parse(b[primaryIndex])));
+					break;
+				case "string":
+					Comparer<string> stringComparer = Comparer<string>.Default;
+					csv.Sort((a, b) => stringComparer.Compare(a[primaryIndex], b[primaryIndex]));
+					break;
+				default:
+					Debug.Log($"[TableGenerator] table name: {tableName}, unsupported primary variable type. {primaryType}");
+					break;
+			}
 
 			string jsonText = "";
 
