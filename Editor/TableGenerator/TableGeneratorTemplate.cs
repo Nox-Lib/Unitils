@@ -55,17 +55,15 @@ namespace Unitils
 				"\t\tprivate readonly {2}[] secondaryIndex;\n\n";
 
 			public const string CONSTRUCTOR =
-				"\t\tpublic {0}({1}[] source) : base(source)\n" +
+				"\t\tpublic {0}({1}[] ordered) : base(ordered)\n" +
 				"\t\t{{\n" +
 				"\t\t\tthis.primaryKeySelector = _ => _.{2};\n" +
-//				"\t\t\tthis.source = this.CloneAndSortBy(this.primaryKeySelector, Comparer<{3}>.Default);\n" +
 				"\t\t}}\n\n";
 
 			public const string CONSTRUCTOR_ALSO_SECONDARY =
-				"\t\tpublic {0}({1}[] source) : base(source)\n" +
+				"\t\tpublic {0}({1}[] ordered) : base(ordered)\n" +
 				"\t\t{{\n" +
 				"\t\t\tthis.primaryKeySelector = _ => _.{2};\n" +
-//				"\t\t\t//this.source = this.CloneAndSortBy(this.primaryKeySelector, Comparer<{3}>.Default);\n" +
 				"\t\t\tthis.secondaryIndexSelector = _ => {4};\n" +
 				"\t\t\tthis.secondaryIndex = this.CloneAndSortBy(this.secondaryIndexSelector, Comparer<{5}>.Default);\n" +
 				"\t\t}}\n\n";
@@ -112,17 +110,15 @@ namespace Unitils
 				"\t\tprivate readonly List<{2}> secondaryIndex;\n\n";
 
 			public const string CONSTRUCTOR =
-				"\t\tpublic {0}(List<{1}> source = null) : base(source)\n" +
+				"\t\tpublic {0}(List<{1}> ordered = null) : base(ordered)\n" +
 				"\t\t{{\n" +
 				"\t\t\tthis.primaryKeySelector = _ => _.{2};\n" +
-//				"\t\t\tthis.source = this.CloneAndSortBy(this.primaryKeySelector, Comparer<{3}>.Default);\n" +
 				"\t\t}}\n\n";
 
 			public const string CONSTRUCTOR_ALSO_SECONDARY =
-				"\t\tpublic {0}(List<{1}> source = null) : base(source)\n" +
+				"\t\tpublic {0}(List<{1}> ordered = null) : base(ordered)\n" +
 				"\t\t{{\n" +
 				"\t\t\tthis.primaryKeySelector = _ => _.{2};\n" +
-//				"\t\t\t//this.source = this.CloneAndSortBy(this.primaryKeySelector, Comparer<{3}>.Default);\n" +
 				"\t\t\tthis.secondaryIndexSelector = _ => {4};\n" +
 				"\t\t\tthis.secondaryIndex = this.CloneAndSortBy(this.secondaryIndexSelector, Comparer<{5}>.Default);\n" +
 				"\t\t}}\n\n";

@@ -6,12 +6,13 @@ namespace Unitils
 	public abstract class ReadonlyTable<TElement>
 	{
 		public RangeList<TElement> All => new RangeList<TElement>(this.source, 0, this.source.Length);
+		public int Count => this.source.Length;
 
 		protected TElement[] source;
 
-		protected ReadonlyTable(TElement[] source)
+		protected ReadonlyTable(TElement[] ordered)
 		{
-			this.source = source;
+			this.source = ordered;
 		}
 
 		protected TElement ThrowKeyNotFound<TKey>(TKey key)

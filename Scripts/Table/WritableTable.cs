@@ -7,12 +7,13 @@ namespace Unitils
 	public abstract class WritableTable<TElement>
 	{
 		public IReadOnlyList<TElement> All => this.source;
+		public int Count => this.source.Count;
 
 		protected List<TElement> source;
 
-		protected WritableTable(List<TElement> source = null)
+		protected WritableTable(List<TElement> ordered = null)
 		{
-			this.source = source ?? new List<TElement>();
+			this.source = ordered ?? new List<TElement>();
 		}
 
 		protected List<TElement> CloneAndSortBy<TKey>(Func<TElement, TKey> indexSelector, IComparer<TKey> comparer)
